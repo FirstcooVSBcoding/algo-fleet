@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Algo Group — Fleet Monitor</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css" />
+<style>
+:root {
+  --bg: #ffffff; --bg2: #f5f5f3; --bg3: #eeede9;
+  --text: #1a1a18; --text2: #6b6b66; --text3: #9b9b96;
+  --border: rgba(0,0,0,0.12); --border2: rgba(0,0,0,0.2);
+  --blue: #185FA5; --blue-bg: #E6F1FB; --blue-mid: #378ADD;
+  --green: #3B6D11; --green-bg: #EAF3DE; --green-mid: #639922;
+  --red: #A32D2D; --red-bg: #FCEBEB; --red-mid: #E24B4A;
+  --amber: #854F0B; --amber-bg: #FAEEDA; --amber-mid: #BA7517;
+  --radius: 8px; --radius-lg: 12px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg3); color: var(--text); min-height: 100vh; }
+.screen { display: none; min-height: 100vh; }
+.screen.active { display: flex; }
+
+/* ===== LOGIN ===== */
+#s-login { align-items: center; justify-content: center; background: var(--bg3); }
+.login-card { width: 400px; background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 2.5rem; box-shadow: 0 4px 24px rgba(0,0,0,0.06); }
+.login-logo { font-size: 22px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+.login-logo span { color: var(--blue-mid); }
+.login-sub { font-size: 13px; color: var(--text2); margin-bottom: 2rem; }
+.field { margin-bottom: 16px; }
+.field label { font-size: 13px; color: var(--text2); display: block; margin-bottom: 6px; }
+.field input { width: 100%; font-size: 14px; padding: 9px 13px; border-radius: var(--radius); border: 0.5px solid var(--border2); background: var(--bg); color: var(--text); outline: none; transition: border-color 0.15s; }
+.field input:focus { border-color: var(--blue-mid); box-shadow: 0 0 0 3px rgba(55,138,221,0.1); }
+.login-btn { width: 100%; padding: 11px; font-size: 14px; font-weight: 500; border-radius: var(--radius); border: none; background: var(--blue); color: #fff; cursor: pointer; transition: background 0.15s; }
+.login-btn:hover { background: #0C447C; }
+.error-box { font-size: 12px; color: var(--red); background: var(--red-bg); border-radius: var(--radius); padding: 9px 13px; margin-top: 12px; display: none; }
+
+/* ===== MAIN LAYOUT ===== */
+#s-app { flex-direction: row; background: var(--bg3); }
+.sidebar { width: 220px; background: var(--bg); border-right: 0.5px solid var(--border); display: flex; flex-direction: column; padding: 1.25rem 0; flex-shrink: 0; min-height: 100vh; }
+.sb-logo { font-size: 17px; font-weight: 600; padding: 0 1.25rem 1.25rem; border-bottom: 0.5px solid var(--border); margin-bottom: 1rem; }
+.sb-logo span { color: var(--blue-mid); }
+.sb-user { padding: 0 1.25rem 1rem; border-bottom: 0.5px solid var(--border); margin-bottom: 1rem; }
+.sb-avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; margin-bottom: 8px; }
+.sb-uname { font-size: 13px; font-weight: 500; color: var(--text); }
+.sb-role { font-size: 11px; padding: 2px 8px; border-radius: 20px; font-weight: 500; display: inline-block; margin-top: 3px; }
+.sb-nav { flex: 1; padding: 0 0.75rem; }
+.nav-item { display: flex; align-items: center; gap: 9px; padding: 9px 12px; border-radius: var(--radius); font-size: 13px; color: var(--text2); cursor: pointer; margin-bottom: 2px; transition: background 0.12s; }
+.nav-item:hover { background: var(--bg2); color: var(--text); }
+.nav-item.active { background: var(--blue-bg); color: var(--blue); font-weight: 500; }
+.nav-item i { font-size: 17px; }
+.nav-badge { margin-left: auto; font-size: 11px; background: var(--red-mid); color: #fff; border-radius: 20px; padding: 1px 7px; font-weight: 500; }
+.sb-bottom { padding: 1rem 0.75rem 0; border-top: 0.5px solid var(--border); }
+.logout-btn { display: flex; align-items: center; gap: 8px; padding: 9px 12px; border-radius: var(--radius); font-size: 13px; color: var(--text2); cursor: pointer; width: 100%; background: transparent; border: none; transition: background 0.12s; }
+.logout-btn:hover { background: var(--bg2); color: var(--text); }
+
+.main { flex: 1; overflow-y: auto; padding: 1.5rem; min-height: 100vh; }
+.page { display: none; }
+.page.active { display: block; }
+.page-title { font-size: 18px; font-weight: 600; color: var(--text); margin-bottom: 1.5rem; }
+
+/* ===== CARDS & BADGES ===== */
+.card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; }
+.card-title { font-size: 12px; font-weight: 500; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+.bdg { font-size: 11px; padding: 3px 9px; border-radius: 20px; font-weight: 500; display: inline-block; }
+.bdg-red { background: #F7C1C1; color: #791F1F; }
+.bdg-amber { background: #FAC775; color: #633806; }
+.bdg-green { background: #C0DD97; color: #3B6D11; }
+.bdg-blue { background: #B5D4F4; color: #0C447C; }
+
+/* ===== METRICS ===== */
+.metrics-grid { display: grid; gap: 10px; margin-bottom: 1.5rem; }
+.metric { background: var(--bg2); border-radius: var(--radius); padding: 14px 16px; }
+.metric-label { font-size: 12px; color: var(--text2); margin-bottom: 6px; display: flex; align-items: center; gap: 5px; }
+.metric-val { font-size: 26px; font-weight: 600; color: var(--text); }
+.mv-red { color: var(--red-mid); }
+.mv-green { color: var(--green); }
+.mv-amber { color: var(--amber-mid); }
+.mv-blue { color: var(--blue); }
+
+/* ===== ALERT ROWS ===== */
+.alert-row { display: flex; align-items: center; gap: 11px; padding: 11px 14px; border-radius: var(--radius); border: 0.5px solid var(--border); background: var(--bg); margin-bottom: 6px; cursor: pointer; transition: border-color 0.12s; }
+.alert-row:hover { border-color: var(--border2); }
+.alert-row.crit { border-color: #F09595; background: #FCEBEB; }
+.alert-row.warn { border-color: #FAC775; background: #FAEEDA; }
+.dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.dot-r { background: var(--red-mid); }
+.dot-a { background: var(--amber-mid); }
+.dot-g { background: var(--green); }
+.dot-b { background: var(--blue-mid); }
+.ar-name { font-size: 14px; font-weight: 500; min-width: 140px; }
+.crit .ar-name { color: var(--red); }
+.warn .ar-name { color: var(--amber); }
+.ar-desc { font-size: 12px; color: var(--text2); flex: 1; }
+.crit .ar-desc { color: #993C1D; }
+.warn .ar-desc { color: var(--amber); }
+.ar-time { font-size: 12px; color: var(--text3); min-width: 50px; text-align: right; }
+.call-btn { font-size: 12px; padding: 5px 12px; border-radius: var(--radius); border: 0.5px solid #85B7EB; background: transparent; color: var(--blue); cursor: pointer; }
+.call-btn:hover { background: var(--blue-bg); }
+
+/* ===== TABLE ===== */
+.table-wrap { border: 0.5px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+.tbl { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.tbl th { font-size: 11px; font-weight: 500; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; padding: 10px 13px; text-align: left; background: var(--bg2); border-bottom: 0.5px solid var(--border); }
+.tbl td { font-size: 13px; padding: 10px 13px; border-bottom: 0.5px solid var(--border); color: var(--text); vertical-align: middle; }
+.tbl tr:last-child td { border-bottom: none; }
+.tbl tr:hover td { background: var(--bg2); }
+.tbl tr.row-crit td { background: #fff5f5; }
+.tbl tr.row-warn td { background: #fffbf0; }
+
+/* ===== STATUS BADGES ===== */
+.sb-driving { background: var(--green-bg); color: var(--green); font-size: 11px; padding: 2px 8px; border-radius: 20px; font-weight: 500; }
+.sb-off { background: var(--bg2); color: var(--text2); font-size: 11px; padding: 2px 8px; border-radius: 20px; font-weight: 500; }
+.sb-sleeper { background: var(--blue-bg); color: var(--blue); font-size: 11px; padding: 2px 8px; border-radius: 20px; font-weight: 500; }
+.sb-on { background: var(--amber-bg); color: var(--amber); font-size: 11px; padding: 2px 8px; border-radius: 20px; font-weight: 500; }
+.val-red { color: var(--red-mid); font-weight: 500; }
+.val-amber { color: var(--amber-mid); font-weight: 500; }
+.val-green { color: var(--green); font-weight: 500; }
+
+/* ===== FILTERS ===== */
+.filters { display: flex; align-items: center; gap: 8px; margin-bottom: 1rem; flex-wrap: wrap; }
+.search-wrap { position: relative; flex: 1; min-width: 200px; }
+.search-wrap input { width: 100%; padding: 8px 12px 8px 34px; font-size: 13px; border-radius: var(--radius); border: 0.5px solid var(--border2); background: var(--bg); color: var(--text); outline: none; }
+.search-wrap input:focus { border-color: var(--blue-mid); }
+.search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text3); font-size: 16px; pointer-events: none; }
+.fsel { padding: 8px 11px; font-size: 13px; border-radius: var(--radius); border: 0.5px solid var(--border2); background: var(--bg); color: var(--text); outline: none; cursor: pointer; }
+.fbtn { padding: 7px 13px; font-size: 12px; border-radius: var(--radius); border: 0.5px solid var(--border); background: transparent; color: var(--text2); cursor: pointer; }
+.fbtn.active-red { background: var(--red-bg); border-color: #F09595; color: var(--red); }
+.fbtn.active-amber { background: var(--amber-bg); border-color: #FAC775; color: var(--amber); }
+
+/* ===== DETAIL ===== */
+.detail-grid { display: grid; grid-template-columns: 1fr 1.6fr; gap: 14px; }
+.back-btn { display: flex; align-items: center; gap: 7px; font-size: 13px; padding: 7px 14px; border-radius: var(--radius); border: 0.5px solid var(--border2); background: var(--bg); color: var(--text2); cursor: pointer; margin-bottom: 1.25rem; width: fit-content; }
+.back-btn:hover { background: var(--bg2); }
+.drv-avatar { width: 46px; height: 46px; border-radius: 50%; background: var(--blue-bg); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; color: var(--blue); flex-shrink: 0; }
+.info-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 0.5px solid var(--border); }
+.info-row:last-child { border-bottom: none; }
+.info-label { font-size: 12px; color: var(--text2); display: flex; align-items: center; gap: 6px; }
+.info-val { font-size: 13px; font-weight: 500; }
+.hos-bar { height: 8px; border-radius: 4px; background: var(--bg2); overflow: hidden; margin: 8px 0 12px; }
+.hos-fill { height: 100%; border-radius: 4px; transition: width 0.4s; }
+.action-btn { display: flex; align-items: center; gap: 10px; padding: 11px 14px; border-radius: var(--radius); border: 0.5px solid var(--border2); background: var(--bg); cursor: pointer; font-size: 13px; color: var(--text); text-align: left; width: 100%; margin-bottom: 7px; transition: background 0.12s; }
+.action-btn:hover { background: var(--bg2); }
+.action-btn.primary { background: var(--blue); color: #fff; border-color: var(--blue); }
+.action-btn.primary:hover { background: #0C447C; }
+.action-btn.danger { border-color: #F09595; color: var(--red); }
+.action-btn.danger:hover { background: var(--red-bg); }
+.ab-label { font-size: 13px; font-weight: 500; }
+.ab-hint { font-size: 11px; opacity: 0.7; margin-top: 1px; }
+.script-box { background: var(--bg2); border-radius: var(--radius); padding: 13px 14px; font-size: 13px; line-height: 1.7; white-space: pre-wrap; border: 0.5px solid var(--border); margin-top: 10px; max-height: 200px; overflow-y: auto; }
+.lang-tabs { display: flex; gap: 5px; margin-bottom: 8px; }
+.ltab { font-size: 11px; padding: 3px 10px; border-radius: 20px; border: 0.5px solid var(--border); cursor: pointer; color: var(--text2); background: transparent; }
+.ltab.active { background: var(--blue-bg); border-color: #85B7EB; color: var(--blue); }
+.tl-item { display: flex; gap: 12px; }
+.tl-dot-wrap { display: flex; flex-direction: column; align-items: center; }
+.tl-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 3px; }
+.tl-line { width: 1px; background: var(--border); flex: 1; min-height: 18px; }
+.tl-content { padding-bottom: 14px; }
+.tl-time { font-size: 11px; color: var(--text3); }
+.tl-text { font-size: 13px; color: var(--text); }
+.tl-note { font-size: 12px; color: var(--text2); margin-top: 1px; }
+.resolve-btn { width: 100%; padding: 10px; font-size: 13px; font-weight: 500; border-radius: var(--radius); border: none; background: var(--green); color: #fff; cursor: pointer; margin-top: 8px; }
+.resolve-btn:hover { background: #27500A; }
+.resolved-msg { display: none; background: var(--green-bg); border: 0.5px solid #97C459; border-radius: var(--radius); padding: 10px 13px; font-size: 13px; color: var(--green); text-align: center; margin-top: 8px; }
+
+/* ===== TEAM PAGE ===== */
+.team-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.member-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 0.5px solid var(--border); }
+.member-row:last-child { border-bottom: none; }
+.m-avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; flex-shrink: 0; }
+.m-name { font-size: 13px; font-weight: 500; flex: 1; }
+.m-role { font-size: 11px; color: var(--text2); }
+.m-alerts { font-size: 12px; font-weight: 500; }
+
+/* ===== API PAGE ===== */
+.api-tabs { display: flex; gap: 5px; margin-bottom: 1.25rem; }
+.atab { font-size: 13px; padding: 7px 15px; border-radius: var(--radius); border: 0.5px solid var(--border); background: transparent; color: var(--text2); cursor: pointer; }
+.atab.active { background: var(--bg2); color: var(--text); border-color: var(--border2); }
+.apanel { display: none; }
+.apanel.active { display: block; }
+.api-bar { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: var(--radius); margin-bottom: 1.25rem; }
+.api-mock { background: var(--amber-bg); border: 0.5px solid #FAC775; }
+.api-live { background: var(--green-bg); border: 0.5px solid #97C459; }
+.api-mock .api-text { color: var(--amber); font-size: 13px; font-weight: 500; }
+.api-live .api-text { color: var(--green); font-size: 13px; font-weight: 500; }
+.pulse { animation: pulse 1.5s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+.feed-wrap { border: 0.5px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; max-height: 360px; overflow-y: auto; }
+.feed-hdr { display: flex; align-items: center; justify-content: space-between; padding: 9px 13px; background: var(--bg2); border-bottom: 0.5px solid var(--border); }
+.feed-row { display: flex; align-items: flex-start; gap: 10px; padding: 9px 13px; border-bottom: 0.5px solid var(--border); animation: fadeIn 0.3s; }
+.feed-row:last-child { border-bottom: none; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(-3px)} to{opacity:1;transform:translateY(0)} }
+.feed-body { flex: 1; }
+.feed-event { font-size: 13px; }
+.feed-meta { font-size: 11px; color: var(--text3); margin-top: 1px; }
+.feed-time { font-size: 11px; color: var(--text3); min-width: 55px; text-align: right; }
+.fb-mock { background: #FAC775; color: #633806; font-size: 10px; padding: 1px 6px; border-radius: 20px; font-weight: 500; margin-left: 5px; }
+.fb-api { background: #C0DD97; color: #3B6D11; font-size: 10px; padding: 1px 6px; border-radius: 20px; font-weight: 500; margin-left: 5px; }
+.ep-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1rem 1.25rem; }
+.ep-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.ep-method { font-size: 11px; padding: 2px 8px; border-radius: 20px; font-weight: 500; display: inline-block; margin-bottom: 7px; }
+.ep-get { background: var(--green-bg); color: var(--green); }
+.ep-post { background: var(--blue-bg); color: var(--blue); }
+.ep-path { font-family: monospace; font-size: 11px; color: var(--text2); background: var(--bg2); padding: 3px 7px; border-radius: 4px; margin-bottom: 7px; display: block; }
+.trig-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.trig-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1rem 1.25rem; }
+.toggle-sw { width: 36px; height: 20px; border-radius: 10px; background: var(--bg2); border: 0.5px solid var(--border2); cursor: pointer; position: relative; display: inline-block; transition: background 0.2s; }
+.toggle-sw.on { background: var(--blue); border-color: var(--blue); }
+.toggle-thumb { width: 14px; height: 14px; border-radius: 50%; background: #fff; position: absolute; top: 2px; left: 2px; transition: left 0.2s; }
+.toggle-sw.on .toggle-thumb { left: 18px; }
+.config-input { font-size: 13px; padding: 6px 11px; border-radius: var(--radius); border: 0.5px solid var(--border2); background: var(--bg); color: var(--text); outline: none; }
+.config-input:focus { border-color: var(--blue-mid); }
+.save-btn { font-size: 13px; padding: 8px 20px; border-radius: var(--radius); border: none; background: var(--blue); color: #fff; cursor: pointer; }
+.save-btn:hover { background: #0C447C; }
+
+/* ===== PAGINATION ===== */
+.pagination { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; }
+.pg-info { font-size: 12px; color: var(--text2); }
+.pg-btns { display: flex; gap: 4px; }
+.pg-btn { font-size: 12px; padding: 5px 10px; border-radius: var(--radius); border: 0.5px solid var(--border); background: transparent; color: var(--text2); cursor: pointer; }
+.pg-btn.active { background: var(--bg2); color: var(--text); border-color: var(--border2); }
+.pg-btn:hover { background: var(--bg2); }
+
+/* ===== COMPANY TABS ===== */
+.co-tabs { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 1rem; }
+.cotab { font-size: 12px; padding: 5px 12px; border-radius: 20px; border: 0.5px solid var(--border); background: transparent; color: var(--text2); cursor: pointer; }
+.cotab.active { background: var(--blue-bg); border-color: #85B7EB; color: var(--blue); }
+
+/* ===== ROLE COLORS ===== */
+.av-admin { background: var(--blue-bg); color: var(--blue); }
+.av-mgr-a { background: #C0DD97; color: var(--green); }
+.av-mgr-b { background: #9FE1CB; color: #0F6E56; }
+.av-sup-a { background: #FAC775; color: #633806; }
+.av-sup-b { background: #F5C4B3; color: #993C1D; }
+.rb-admin { background: var(--blue-bg); color: var(--blue); }
+.rb-mgr-a { background: #C0DD97; color: var(--green); }
+.rb-mgr-b { background: #9FE1CB; color: #0F6E56; }
+.rb-sup-a { background: #FAC775; color: #633806; }
+.rb-sup-b { background: #F5C4B3; color: #993C1D; }
+.bn-admin { background: var(--blue-bg); border: 0.5px solid #85B7EB; color: var(--blue); }
+.bn-mgr-a { background: var(--green-bg); border: 0.5px solid #97C459; color: var(--green); }
+.bn-mgr-b { background: #E1F5EE; border: 0.5px solid #5DCAA5; color: #0F6E56; }
+.bn-sup-a { background: var(--amber-bg); border: 0.5px solid #EF9F27; color: var(--amber); }
+.bn-sup-b { background: #FAECE7; border: 0.5px solid #F0997B; color: #993C1D; }
+.role-banner { border-radius: var(--radius); padding: 10px 14px; margin-bottom: 1.25rem; font-size: 13px; }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 900px) {
+  .detail-grid { grid-template-columns: 1fr; }
+  .team-grid { grid-template-columns: 1fr; }
+  .ep-grid { grid-template-columns: 1fr; }
+  .trig-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="screen active" id="s-login">
+  <div class="login-card">
+    <div class="login-logo"><span>Algo</span> Group</div>
+    <div class="login-sub">Fleet Compliance Platform</div>
+    <div class="field"><label>Username</label><input type="text" id="inp-user" placeholder="username" autocomplete="username" /></div>
+    <div class="field"><label>Password</label><input type="password" id="inp-pass" placeholder="••••••••" autocomplete="current-password" /></div>
+    <button class="login-btn" onclick="doLogin()">Sign in</button>
+    <div class="error-box" id="err-box"><i class="ti ti-alert-circle"></i> Username yoki parol noto'g'ri</div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div class="screen" id="s-app">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sb-logo"><span>Algo</span> Group</div>
+    <div class="sb-user">
+      <div class="sb-avatar" id="sb-avatar"></div>
+      <div class="sb-uname" id="sb-uname"></div>
+      <span class="sb-role" id="sb-role"></span>
+    </div>
+    <div class="sb-nav" id="sb-nav"></div>
+    <div class="sb-bottom">
+      <button class="logout-btn" onclick="doLogout()"><i class="ti ti-logout"></i> Chiqish</button>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main" id="main-content">
+
+    <!-- DASHBOARD PAGE -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-title">Dashboard</div>
+      <div class="role-banner" id="dash-banner"></div>
+      <div class="metrics-grid" id="dash-metrics"></div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-alert-triangle"></i> Aktiv alertlar</div>
+        <div id="dash-alerts"></div>
+      </div>
+      <div id="dash-extra" style="margin-top:14px;"></div>
+    </div>
+
+    <!-- DRIVERS PAGE -->
+    <div class="page" id="page-drivers">
+      <div class="page-title">Drivers</div>
+      <div class="co-tabs" id="driver-cotabs"></div>
+      <div class="metrics-grid" style="grid-template-columns:repeat(5,1fr);" id="driver-stats"></div>
+      <div class="filters" style="margin-top:10px;">
+        <div class="search-wrap"><i class="ti ti-search search-icon"></i><input type="text" id="drv-search" placeholder="Ism yoki truck # qidirish..." oninput="renderDrivers()" /></div>
+        <select class="fsel" id="drv-block" onchange="renderDrivers()"><option value="all">Barcha blocklar</option><option value="A">Block A</option><option value="B">Block B</option></select>
+        <select class="fsel" id="drv-status" onchange="renderDrivers()"><option value="all">Barcha statuslar</option><option value="Driving">Driving</option><option value="Off Duty">Off Duty</option><option value="Sleeper">Sleeper</option><option value="On Duty">On Duty</option></select>
+        <button class="fbtn" id="fbtn-alert" onclick="toggleDriverFilter('alert')"><i class="ti ti-alert-triangle"></i> Faqat alertlar</button>
+        <button class="fbtn" id="fbtn-disc" onclick="toggleDriverFilter('disc')"><i class="ti ti-wifi-off"></i> Disconnected</button>
+      </div>
+      <div class="table-wrap" style="margin-top:10px;">
+        <table class="tbl">
+          <thead><tr>
+            <th style="width:18%">Driver</th>
+            <th style="width:16%">Kompaniya</th>
+            <th style="width:11%">Status</th>
+            <th style="width:12%">ELD</th>
+            <th style="width:11%">HOS qoldi</th>
+            <th style="width:10%">Pre-trip</th>
+            <th style="width:10%">Odometer</th>
+            <th style="width:12%">Amal</th>
+          </tr></thead>
+          <tbody id="drv-tbody"></tbody>
+        </table>
+      </div>
+      <div class="pagination"><div class="pg-info" id="drv-pginfo"></div><div class="pg-btns" id="drv-pgbtns"></div></div>
+    </div>
+
+    <!-- ALERTS PAGE -->
+    <div class="page" id="page-alerts">
+      <div id="alert-list-view">
+        <div class="page-title">Aktiv Alertlar</div>
+        <div id="alerts-list-wrap"></div>
+      </div>
+      <div id="alert-detail-view" style="display:none;">
+        <button class="back-btn" onclick="showAlertList()"><i class="ti ti-arrow-left"></i> Alertlar</button>
+        <div class="detail-grid">
+          <div>
+            <div class="card" style="margin-bottom:12px;">
+              <div class="card-title"><i class="ti ti-user"></i> Driver ma'lumoti</div>
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+                <div class="drv-avatar" id="det-initials"></div>
+                <div><div style="font-size:16px;font-weight:600;" id="det-name"></div><div style="font-size:12px;color:var(--text2);margin-top:2px;" id="det-sub"></div></div>
+              </div>
+              <div id="det-inforows"></div>
+            </div>
+            <div class="card">
+              <div class="card-title"><i class="ti ti-clock"></i> HOS holati</div>
+              <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:5px;"><span>Haydash vaqti</span><span id="det-hosval"></span></div>
+              <div class="hos-bar"><div class="hos-fill" id="det-hosfill"></div></div>
+              <div id="det-hosdetail"></div>
+            </div>
+          </div>
+          <div>
+            <div class="card" style="margin-bottom:12px;">
+              <div class="card-title"><i class="ti ti-alert-triangle"></i> Alert detail</div>
+              <div id="det-banner"></div>
+              <div class="card-title" style="margin-top:12px;"><i class="ti ti-player-play"></i> Amallar</div>
+              <div id="det-actions"></div>
+              <div class="card-title" style="margin-top:4px;"><i class="ti ti-message"></i> Qo'ng'iroq skripti</div>
+              <div class="lang-tabs"><button class="ltab active" onclick="setLang('uz')">O'zbek</button><button class="ltab" onclick="setLang('ru')">Русский</button><button class="ltab" onclick="setLang('en')">English</button></div>
+              <div class="script-box" id="det-script"></div>
+              <button class="resolve-btn" id="det-resolve" onclick="resolveAlert()">Alertni yopish — hal qilindi</button>
+              <div class="resolved-msg" id="det-resolved"><i class="ti ti-circle-check"></i> Alert yopildi — log saqlandi</div>
+            </div>
+            <div class="card">
+              <div class="card-title"><i class="ti ti-history"></i> Tarix</div>
+              <div id="det-timeline"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TEAM PAGE -->
+    <div class="page" id="page-team">
+      <div class="page-title">Jamoa</div>
+      <div id="team-content"></div>
+    </div>
+
+    <!-- API PAGE -->
+    <div class="page" id="page-api">
+      <div class="page-title">API Integration</div>
+      <div class="api-tabs">
+        <button class="atab active" onclick="showApiTab('live')"><i class="ti ti-activity"></i> Live Feed</button>
+        <button class="atab" onclick="showApiTab('endpoints')"><i class="ti ti-plug"></i> Endpoints</button>
+        <button class="atab" onclick="showApiTab('triggers')"><i class="ti ti-bell"></i> Triggers</button>
+        <button class="atab" onclick="showApiTab('config')"><i class="ti ti-settings"></i> Config</button>
+      </div>
+      <div class="apanel active" id="apanel-live">
+        <div id="api-bar"></div>
+        <div class="metrics-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:1.25rem;">
+          <div class="metric"><div class="metric-label"><i class="ti ti-refresh"></i> So'nggi sync</div><div class="metric-val mv-blue" id="api-sync">—</div></div>
+          <div class="metric"><div class="metric-label"><i class="ti ti-truck"></i> Online drivers</div><div class="metric-val mv-green" id="api-online">0</div></div>
+          <div class="metric"><div class="metric-label"><i class="ti ti-alert-triangle"></i> Yangi alertlar</div><div class="metric-val mv-red" id="api-alerts">0</div></div>
+          <div class="metric"><div class="metric-label"><i class="ti ti-clock"></i> Interval</div><div class="metric-val mv-amber">30s</div></div>
+        </div>
+        <div class="feed-wrap">
+          <div class="feed-hdr"><span style="font-size:12px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;"><i class="ti ti-radio"></i> Real-time event log</span><span style="font-size:12px;color:var(--text2);" id="feed-cnt">0 event</span></div>
+          <div id="feed-body"></div>
+        </div>
+      </div>
+      <div class="apanel" id="apanel-endpoints">
+        <div class="ep-grid" id="ep-grid"></div>
+      </div>
+      <div class="apanel" id="apanel-triggers">
+        <div class="trig-grid" id="trig-grid"></div>
+      </div>
+      <div class="apanel" id="apanel-config">
+        <div class="card" style="margin-bottom:12px;">
+          <div class="card-title"><i class="ti ti-key"></i> Factor ELD API sozlamalari</div>
+          <div class="info-row"><div class="info-label">API Base URL</div><input class="config-input" value="https://api.factorel.com/v1" style="width:240px;" /></div>
+          <div class="info-row"><div class="info-label">API Key</div><input class="config-input" type="password" placeholder="API key kelganda shu yerga" style="width:240px;" /></div>
+          <div class="info-row"><div class="info-label">Sync interval (soniya)</div><input class="config-input" type="number" value="30" min="10" max="300" style="width:100px;" /></div>
+          <div class="info-row"><div class="info-label">Rejim</div><span id="cfg-mode" style="font-size:13px;font-weight:500;color:var(--amber);">Mock data</span></div>
+          <div style="margin-top:12px;display:flex;align-items:center;gap:10px;">
+            <button class="save-btn" onclick="saveConfig()">Saqlash</button>
+            <span id="cfg-saved" style="font-size:12px;color:var(--green);display:none;"><i class="ti ti-check"></i> Saqlandi</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="ti ti-info-circle"></i> Factor ELD API ulash yo'riqnomasi</div>
+          <div style="font-size:13px;color:var(--text2);line-height:1.9;">
+            <div><strong style="color:var(--text);">1.</strong> Factor ELD support: <code style="background:var(--bg2);padding:2px 6px;border-radius:4px;">support@factorel.com</code></div>
+            <div><strong style="color:var(--text);">2.</strong> So'rang: "API access for fleet monitoring — webhook + driver status API"</div>
+            <div><strong style="color:var(--text);">3.</strong> API key olganingizda yuqoridagi maydonga kiriting</div>
+            <div><strong style="color:var(--text);">4.</strong> Rejim avtomatik Mock → Live ga o'tadi</div>
+            <div><strong style="color:var(--text);">5.</strong> Webhook URL: <code style="background:var(--bg2);padding:2px 6px;border-radius:4px;">/webhook/factor-eld/events</code></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ===== DATA =====
+const USERS = {
+  'algo.admin':       {pass:'AlgoGroup@2025!',name:'Admin',init:'AD',role:'admin',avCls:'av-admin',rbCls:'rb-admin',bnCls:'bn-admin',blockLabel:'Block A + B',banner:'Admin — Block A + Block B — to\'liq access',metrics:[{l:'Jami trucks',v:'412',c:''},{l:'Active alerts',v:'7',c:'mv-red'},{l:'Disconnected',v:'3',c:'mv-amber'},{l:'Compliant',v:'402',c:'mv-green'}],mcols:4,nav:['dashboard','drivers','alerts','team','api']},
+  'javohir.manager':  {pass:'FirstA@Jav25',name:'Javohir',init:'JV',role:'manager',avCls:'av-mgr-a',rbCls:'rb-mgr-a',bnCls:'bn-mgr-a',blockLabel:'Block A',banner:'Block A Manager — 9 support xodim va ularning driverlari',metrics:[{l:'Block A trucks',v:'218',c:''},{l:'Active alerts',v:'4',c:'mv-red'},{l:'Compliant',v:'214',c:'mv-green'}],mcols:3,nav:['dashboard','drivers','alerts','team']},
+  'qobil.manager':    {pass:'FirstA@Qob25',name:'Qobil',init:'QB',role:'manager',avCls:'av-mgr-a',rbCls:'rb-mgr-a',bnCls:'bn-mgr-a',blockLabel:'Block A',banner:'Block A Manager — 9 support xodim va ularning driverlari',metrics:[{l:'Block A trucks',v:'218',c:''},{l:'Active alerts',v:'4',c:'mv-red'},{l:'Compliant',v:'214',c:'mv-green'}],mcols:3,nav:['dashboard','drivers','alerts','team']},
+  'shoxrux.manager':  {pass:'FirstB@Shx25',name:'Shoxrux',init:'SX',role:'manager',avCls:'av-mgr-b',rbCls:'rb-mgr-b',bnCls:'bn-mgr-b',blockLabel:'Block B',banner:'Block B Manager — 6 support xodim va ularning driverlari',metrics:[{l:'Block B trucks',v:'194',c:''},{l:'Active alerts',v:'3',c:'mv-red'},{l:'Compliant',v:'191',c:'mv-green'}],mcols:3,nav:['dashboard','drivers','alerts','team']},
+  'akmal.manager':    {pass:'FirstB@Akm25',name:'Akmal',init:'AK',role:'manager',avCls:'av-mgr-b',rbCls:'rb-mgr-b',bnCls:'bn-mgr-b',blockLabel:'Block B',banner:'Block B Manager — 6 support xodim va ularning driverlari',metrics:[{l:'Block B trucks',v:'194',c:''},{l:'Active alerts',v:'3',c:'mv-red'},{l:'Compliant',v:'191',c:'mv-green'}],mcols:3,nav:['dashboard','drivers','alerts','team']},
+  'muzaffar.support': {pass:'FA@Muz2025',name:'Muzaffar',init:'MZ',role:'support',avCls:'av-sup-a',rbCls:'rb-sup-a',bnCls:'bn-sup-a',blockLabel:'Block A',banner:'Block A Support — faqat o\'zingga assigned driverlar',metrics:[{l:'Mening driverlarim',v:'24',c:''},{l:'Alertlar',v:'1',c:'mv-red'},{l:'Compliant',v:'23',c:'mv-green'}],mcols:3,nav:['dashboard','drivers','alerts']},
+  'behruz.support':   {pass:'FA@Beh2025',name:'Behruz',init:'BH',role:'support',avCls:'av-sup-a',rbCls:'rb-sup-a',bnCls:'bn-sup-a',blockLabel:'Block A',banner:'Block A Support',metrics:[{l:'Mening driverlarim',v:'22',c:''},{l:'Alertlar',v:'0',c:'mv-green'},{l:'Compliant',v:'22',c:'mv-green'}],mcols:3,nav:['dashboard','drivers','alerts']},
+  'mark.support':     {pass:'FA@Mark2025',name:'Behruz (Mark)',init:'MK',role:'support',avCls:'av-sup-a',rbCls:'rb-sup-a',bnCls:'bn-sup-a',blockLabel:'Block A',banner:'Block A Support',metrics:[{l:'Mening driverlarim',v:'25',c:''},{l:'Alertlar',v:'1',c:'mv-red'},{l:'Compliant',v:'24',c:'mv-green'}],mcols:3,nav:['dashboard','drivers','alerts']},
+  'xikmat.support':   {pass:'FA@Xik2025',name:'Xikmatilla',init:'XK',role:'support',avCls:'av-sup-a',rbCls:'rb-sup-a',bnCls:'bn-sup-a',blockLabel:'Block A',banner:'Block A Support',metrics:[{l:'Mening driverlarim',v:'23',c:''},{l:'Alertlar',v:'0',c:'mv-green'},{l:'Compliant',v:'23',c:'mv-green'}],mcols:3,nav:['dashboard','drivers','alerts']},
+  'davron.support':   {pass:'FA@Dav2025',name:'Davron',init:'DV',role:'support',avCls:'av-sup-a',rbCls:'rb-sup-a',bnCls:'bn-sup-a',blockLabel:'Block A',banner:'Block A Support',metrics:[{l:'Mening driverlarim',v:'26',c:''},{l:'Alertlar',v:'1',c:'mv-red'},{l:'Compliant',v:'25',c:'mv-green'}],mcols:3,nav:['dashboard','drivers','alerts']},
+  'mziyo.support':    {pass:'FA@Mzi2025',name:'Muhammadziyo',init:'MZ',role:'support',avCls:'av-sup-a',rbCls:'rb-sup-a',bnCls:'bn-sup-a',blockLabel:'Block A',banner:'Block A Support',metrics:[{l:'Mening driverlarim',v:'21',c:''},{l:'Alertlar',v:'0',c:'mv-green'},{l:'Compliant',v:'21',c:'mv-green'}],mcols:3,nav:['dashboard','drivers','alerts']},
+  'mirsardor.support':{pass:'FA@Msr2025',name:'Mirsardor',init:'MS',role:'support',avCls:'av-sup-a',rbCls:'rb-sup-a',bnCls:'bn-sup-a',blockLabel:'Block A',banner:'Block A Support',metrics:[{l:'Mening driverlarim',v:'24',c:''},{l:'Alertlar',v:'0',c:'mv-green'},{l:'Compliant',v:'24',c:'mv-green'}],mcols:3,nav:['dashboard','drivers','alerts']},
+  'axror.support':    {pass:'FA@Axr2025',name:'Axrorxon',init:'AX',role:'support',avCls:'av-sup-a',rbCls:'rb-sup-a',bnCls:'bn-sup-a',blockLabel:'Block A',banner:'Block A Support',metrics:[{l:'Mening driverlarim',v:'22',c:''},{l:'Alertlar',v:'0',c:'mv-green'},{l:'Compliant',v:'22',c:'mv-green'}],mcols:3,nav:['dashboard','drivers','alerts']},
+  'mxoja.support':    {pass:'FA@Mxj2025',name:'Muhammadxo\'ja',init:'MX',role:'support',avCls:'av-sup-a',rbCls:'rb-sup-a',bnCls:'bn-sup-a',blockLabel:'Block A',banner:'Block A Support',metrics:[{l:'Mening driverlarim',v:'23',c:''},{l:'Alertlar',v:'1',c:'mv-red'},{l:'Compliant',v:'22',c:'mv-green'}],mcols:3,nav:['dashboard','drivers','alerts']},
+  'jahongir.support': {pass:'FB@Jah2025',name:'Jahongir',init:'JH',role:'support',avCls:'av-sup-b',rbCls:'rb-sup-b',bnCls:'bn-sup-b',blockLabel:'Block B',banner:'Block B Support',metrics:[{l:'Mening driverlarim',v:'32',c:''},{l:'Alertlar',v:'1',c:'mv-red'},{l:'Compliant',v:'31',c:'mv-green'}],mcols:3,nav:['dashboard','drivers','alerts']},
+  'ozodbek.support':  {pass:'FB@Ozd2025',name:'Ozodbek',init:'OZ',role:'support',avCls:'av-sup-b',rbCls:'rb-sup-b',bnCls:'bn-sup-b',blockLabel:'Block B',banner:'Block B Support',metrics:[{l:'Mening driverlarim',v:'30',c:''},{l:'Alertlar',v:'0',c:'mv-green'},{l:'Compliant',v:'30',c:'mv-green'}],mcols:3,nav:['dashboard','drivers','alerts']},
+  'aziza.support':    {pass:'FB@Azi2025',name:'Aziza',init:'AZ',role:'support',avCls:'av-sup-b',rbCls:'rb-sup-b',bnCls:'bn-sup-b',blockLabel:'Block B',banner:'Block B Support',metrics:[{l:'Mening driverlarim',v:'28',c:''},{l:'Alertlar',v:'0',c:'mv-green'},{l:'Compliant',v:'28',c:'mv-green'}],mcols:3,nav:['dashboard','drivers','alerts']},
+  'ilhom.support':    {pass:'FB@Ilh2025',name:'Ilhomjon',init:'IL',role:'support',avCls:'av-sup-b',rbCls:'rb-sup-b',bnCls:'bn-sup-b',blockLabel:'Block B',banner:'Block B Support',metrics:[{l:'Mening driverlarim',v:'33',c:''},{l:'Alertlar',v:'1',c:'mv-red'},{l:'Compliant',v:'32',c:'mv-green'}],mcols:3,nav:['dashboard','drivers','alerts']},
+  'elmurod.support':  {pass:'FB@Elm2025',name:'Elmurod',init:'EL',role:'support',avCls:'av-sup-b',rbCls:'rb-sup-b',bnCls:'bn-sup-b',blockLabel:'Block B',banner:'Block B Support',metrics:[{l:'Mening driverlarim',v:'35',c:''},{l:'Alertlar',v:'0',c:'mv-green'},{l:'Compliant',v:'35',c:'mv-green'}],mcols:3,nav:['dashboard','drivers','alerts']},
+  'sevinch.support':  {pass:'FB@Sev2025',name:'Sevinch',init:'SV',role:'support',avCls:'av-sup-b',rbCls:'rb-sup-b',bnCls:'bn-sup-b',blockLabel:'Block B',banner:'Block B Support',metrics:[{l:'Mening driverlarim',v:'29',c:''},{l:'Alertlar',v:'0',c:'mv-green'},{l:'Compliant',v:'29',c:'mv-green'}],mcols:3,nav:['dashboard','drivers','alerts']},
+};
+
+const ALERTS_DATA = []; // Real data — Factor ELD API dan keladi
+
+const DRIVERS_DATA = []; // Real data — Factor ELD API dan keladi
+
+const SCRIPTS = {
+  disconnect:{uz:`Salom, {name} aka. Algo Group dispetcheriman.\n\nELD tizimingiz {min} daqiqadan beri uzilgan ko'rinayapti.\n\nIltimos:\n1. Telefoningizda Factor ELD ilovasini oching\n2. Internet aloqasini tekshiring\n3. Ulanmasa — qog'oz log yozishni boshlang\n\nMuammo davom etsa, qayta qo'ng'iroq qiling.`,ru:`Здравствуйте, {name}. Диспетчер Algo Group.\n\nВаш ELD отключён уже {min} минут.\n\nПожалуйста:\n1. Откройте приложение Factor ELD\n2. Проверьте интернет\n3. Если не подключается — начните бумажный лог\n\nПерезвоните если проблема не решится.`,en:`Hi {name}, Algo Group dispatch.\n\nYour ELD has been disconnected for {min} minutes.\n\nPlease:\n1. Open your Factor ELD app\n2. Check internet connection\n3. If won't connect — start paper logs\n\nCall back if the issue continues.`},
+  hos:{uz:`Salom {name} aka. Algo Group dispetcheri.\n\nSizda faqat {hos} soat haydash vaqti qoldi. Zudlik bilan eng yaqin rest area yoki truck stopda to'xtang.\n\nTo'xtamasangiz HOS violation bo'ladi — bu CSA scoringizga ta'sir qiladi.`,ru:`Здравствуйте, {name}. Диспетчер Algo Group.\n\nОсталось {hos} часов вождения. Немедленно остановитесь на rest area или truck stop.\n\nИначе будет нарушение HOS.`,en:`Hi {name}, Algo Group dispatch.\n\nOnly {hos} hours of driving left. Stop at the nearest rest area immediately.\n\nOtherwise you'll get an HOS violation.`},
+  odometer:{uz:`Salom {name} aka. Algo Group dispetcheri.\n\nELD logingizda {odo} millik odometer farqi ko'rinyapti.\n\nTushuntirish kerak:\n- Bu vaqtda qayerda edingiz?\n- Truck boshqa haydovchi boshqardimi?\n\nIltimos, tushuntirish yozing yoki qo'ng'iroq qiling.`,ru:`Здравствуйте, {name}. Algo Group.\n\nОбнаружена разница одометра {odo} миль.\n\nНужно объяснение:\n- Где были в это время?\n- Управлял ли кто-то ещё?\n\nПожалуйста свяжитесь с нами.`,en:`Hi {name}, Algo Group dispatch.\n\nWe detected a {odo} mile odometer discrepancy.\n\nWe need an explanation:\n- Where were you at that time?\n- Did another driver operate the truck?\n\nPlease call or write back.`},
+  pretip:{uz:`Salom {name} aka. Algo Group dispetcheri.\n\nBugungi shift boshlangan, lekin pre-trip inspection topshirilmagan.\n\nIltimos:\n1. Factor ELD ilovasini oching\n2. Pre-trip inspection bo'limini toping\n3. Hamma punktlarni belgilab tasdiqlang\n\nBu FMCSA talabi — har shift boshida majburiy.`,ru:`Здравствуйте, {name}. Algo Group.\n\nСмена началась, но pre-trip inspection не сдан.\n\nПожалуйста:\n1. Откройте Factor ELD\n2. Найдите pre-trip inspection\n3. Заполните и подтвердите\n\nЭто требование FMCSA.`,en:`Hi {name}, Algo Group dispatch.\n\nShift started but pre-trip inspection not submitted.\n\nPlease:\n1. Open Factor ELD app\n2. Find pre-trip inspection\n3. Complete and confirm\n\nFMCSA requirement — mandatory every shift.`},
+};
+
+const TEAM_A = [{n:'Javohir',r:'Manager',al:4,av:'av-mgr-a'},{n:'Qobil',r:'Manager',al:4,av:'av-mgr-a'},{n:'Muzaffar',r:'Support',al:1,av:'av-sup-a'},{n:'Behruz',r:'Support',al:0,av:'av-sup-a'},{n:'Behruz (Mark)',r:'Support',al:1,av:'av-sup-a'},{n:'Xikmatilla',r:'Support',al:0,av:'av-sup-a'},{n:'Davron',r:'Support',al:1,av:'av-sup-a'},{n:'Muhammadziyo',r:'Support',al:0,av:'av-sup-a'},{n:'Mirsardor',r:'Support',al:0,av:'av-sup-a'},{n:'Axrorxon',r:'Support',al:0,av:'av-sup-a'},{n:'Muhammadxo\'ja',r:'Support',al:1,av:'av-sup-a'}];
+const TEAM_B = [{n:'Shoxrux',r:'Manager',al:3,av:'av-mgr-b'},{n:'Akmal',r:'Manager',al:3,av:'av-mgr-b'},{n:'Jahongir',r:'Support',al:1,av:'av-sup-b'},{n:'Ozodbek',r:'Support',al:0,av:'av-sup-b'},{n:'Aziza',r:'Support',al:0,av:'av-sup-b'},{n:'Ilhomjon',r:'Support',al:1,av:'av-sup-b'},{n:'Elmurod',r:'Support',al:0,av:'av-sup-b'},{n:'Sevinch',r:'Support',al:0,av:'av-sup-b'}];
+const COMPANIES = ['Barchasi','Swift Logistics','FastMove Inc.','Apex Freight','Blue Ridge Trans.','Summit Carriers','Iron Road LLC','Eagle Transport','Horizon Freight','Peak Logistics'];
+
+const NAV_ITEMS = {dashboard:{icon:'ti-layout-dashboard',label:'Dashboard'},drivers:{icon:'ti-truck',label:'Drivers'},alerts:{icon:'ti-alert-triangle',label:'Alerts'},team:{icon:'ti-users',label:'Jamoa'},api:{icon:'ti-plug',label:'API'}};
+
+// ===== STATE =====
+let currentUser = null;
+let currentPage = 'dashboard';
+let drvPage = 1;
+let drvCo = 'Barchasi';
+let drvFilterAlert = false;
+let drvFilterDisc = false;
+let currentAlert = null;
+let scriptLang = 'uz';
+let feedEvents = [];
+let feedAlertCount = 0;
+let apiMock = true;
+let feedTimer = null;
+const TRIGGERS = [{id:'disconnect',icon:'ti-wifi-off',title:'ELD Disconnect',desc:'ELD uzilganidan N daqiqa o\'tsa alert',field:'Threshold (daqiqa)',val:10,on:true},{id:'hos',icon:'ti-clock',title:'HOS Low',desc:'Qolgan vaqt N soatdan kam bo\'lsa',field:'Threshold (soat)',val:2,on:true},{id:'odometer',icon:'ti-road',title:'Odometer Jump',desc:'N mildan ko\'p sakrash',field:'Threshold (mile)',val:5,on:true},{id:'pretip',icon:'ti-clipboard-list',title:'Pre-trip Missing',desc:'Shift boshlanib N daqiqa o\'tsa',field:'Kechikish (daqiqa)',val:30,on:true},{id:'violation',icon:'ti-alert-triangle',title:'HOS Violation',desc:'11h limit oshib ketsa darhol',field:'',val:0,on:true},{id:'posttip',icon:'ti-clipboard-check',title:'Post-trip Missing',desc:'Shift tugab N daqiqa o\'tsa',field:'Kechikish (daqiqa)',val:60,on:false}];
+
+// ===== LOGIN =====
+function doLogin(){
+  try {
+    const u=document.getElementById('inp-user').value.trim();
+    const p=document.getElementById('inp-pass').value;
+    const err=document.getElementById('err-box');
+    const usr=USERS[u];
+    if(!usr||usr.pass!==p){err.style.display='block';err.textContent='Username yoki parol notogri: '+u;return;}
+    err.style.display='none';
+    currentUser=usr;
+    currentUser.username=u;
+    document.getElementById('s-login').classList.remove('active');
+    document.getElementById('s-app').classList.add('active');
+    renderSidebar();
+    showPage('dashboard');
+    if(!feedTimer) startFeed();
+  } catch(e) {
+    document.getElementById('err-box').style.display='block';
+    document.getElementById('err-box').textContent='Xato: '+e.message;
+  }
+}
+
+function doLogout(){
+  document.getElementById('s-app').classList.remove('active');
+  document.getElementById('s-login').classList.add('active');
+  document.getElementById('inp-user').value='';
+  document.getElementById('inp-pass').value='';
+  clearInterval(feedTimer);feedTimer=null;feedEvents=[];feedAlertCount=0;
+}
+
+document.getElementById('inp-pass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+document.getElementById('inp-user').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+
+// ===== SIDEBAR =====
+function renderSidebar(){
+  const u=currentUser;
+  const av=document.getElementById('sb-avatar');
+  av.className='sb-avatar '+u.avCls;
+  av.textContent=u.init;
+  document.getElementById('sb-uname').textContent=u.name;
+  const rb=document.getElementById('sb-role');
+  rb.textContent=u.role==='admin'?'Admin':u.role==='manager'?'Manager':'Support';
+  rb.className='sb-role '+u.rbCls;
+  const nav=document.getElementById('sb-nav');
+  nav.innerHTML=u.nav.map(n=>`<div class="nav-item${currentPage===n?' active':''}" onclick="showPage('${n}')"><i class="ti ${NAV_ITEMS[n].icon}"></i>${NAV_ITEMS[n].label}${n==='alerts'?'<span class="nav-badge">'+ALERTS_DATA.filter(a=>a.sev==='crit').length+'</span>':''}</div>`).join('');
+}
+
+// ===== PAGES =====
+function showPage(name){
+  currentPage=name;
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  renderSidebar();
+  if(name==='dashboard') renderDashboard();
+  if(name==='drivers'){drvPage=1;renderDriverPage();}
+  if(name==='alerts') renderAlertsList();
+  if(name==='team') renderTeam();
+  if(name==='api') renderApiPage();
+}
+
+// ===== DASHBOARD =====
+function renderDashboard(){
+  const u=currentUser;
+  const bn=document.getElementById('dash-banner');
+  bn.className='role-banner '+u.bnCls;
+  bn.innerHTML='<i class="ti ti-info-circle"></i> '+u.banner;
+  const mg=document.getElementById('dash-metrics');
+  // Real API metrics
+  const total=DRIVERS_DATA.length||0;
+  const alerts=ALERTS_DATA.length||0;
+  const disc=DRIVERS_DATA.filter(d=>d.eld==='Disconnected').length||0;
+  const compliant=Math.max(0,total-alerts);
+  let realMetrics;
+  if(u.role==='admin'){
+    mg.style.gridTemplateColumns='repeat(4,1fr)';
+    realMetrics=[
+      {l:'Jami driverlar',v:total||'—',c:''},
+      {l:'Active alerts',v:alerts,c:alerts>0?'mv-red':''},
+      {l:'Disconnected',v:disc,c:disc>0?'mv-amber':''},
+      {l:'Compliant',v:compliant,c:'mv-green'}
+    ];
+  } else if(u.role==='manager'){
+    mg.style.gridTemplateColumns='repeat(3,1fr)';
+    realMetrics=[
+      {l:'Driverlar',v:total||'—',c:''},
+      {l:'Active alerts',v:alerts,c:alerts>0?'mv-red':''},
+      {l:'Compliant',v:compliant,c:'mv-green'}
+    ];
+  } else {
+    mg.style.gridTemplateColumns='repeat(3,1fr)';
+    realMetrics=[
+      {l:'Mening driverlarim',v:total||'—',c:''},
+      {l:'Alertlar',v:alerts,c:alerts>0?'mv-red':''},
+      {l:'Compliant',v:compliant,c:'mv-green'}
+    ];
+  }
+  mg.innerHTML=realMetrics.map(m=>`<div class="metric"><div class="metric-label">${m.l}</div><div class="metric-val ${m.c}">${m.v}</div></div>`).join('');
+  const alWrap=document.getElementById('dash-alerts');
+  const alerts=u.role==='admin'?ALERTS_DATA:u.blockLabel.includes('A')?ALERTS_DATA.filter(a=>a.block==='A'):ALERTS_DATA.filter(a=>a.block==='B');
+  alWrap.innerHTML=alerts.length?alerts.map(a=>`<div class="alert-row ${a.sev}" onclick="openAlertDetail(${a.id})"><div class="dot dot-${a.sev==='crit'?'r':'a'}"></div><div class="ar-name">${a.name}</div><div class="ar-desc">${a.title}</div><span class="bdg bdg-${a.sev==='crit'?'red':'amber'}">${a.badge}</span><div class="ar-time">${a.time}</div><button class="call-btn" onclick="event.stopPropagation();openAlertDetail(${a.id})"><i class="ti ti-phone"></i></button></div>`).join(''):'<div style="padding:14px;font-size:13px;color:var(--text2);background:var(--bg2);border-radius:var(--radius)"><i class="ti ti-circle-check"></i> Hozircha alert yo\'q</div>';
+  const ex=document.getElementById('dash-extra');
+  if(u.role==='admin'){
+    ex.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+      <div class="card"><div class="card-title"><i class="ti ti-users"></i> Block A — ${TEAM_A.length} kishi</div>${TEAM_A.map(m=>`<div class="member-row"><div class="m-avatar ${m.av}" style="width:28px;height:28px;font-size:10px;">${m.n.substring(0,2).toUpperCase()}</div><div class="m-name" style="font-size:12px;">${m.n}</div><div class="m-role">${m.r}</div><div class="m-alerts" style="color:${m.al>0?'var(--red-mid)':'var(--green)'}">${m.al}</div></div>`).join('')}</div>
+      <div class="card"><div class="card-title"><i class="ti ti-users"></i> Block B — ${TEAM_B.length} kishi</div>${TEAM_B.map(m=>`<div class="member-row"><div class="m-avatar ${m.av}" style="width:28px;height:28px;font-size:10px;">${m.n.substring(0,2).toUpperCase()}</div><div class="m-name" style="font-size:12px;">${m.n}</div><div class="m-role">${m.r}</div><div class="m-alerts" style="color:${m.al>0?'var(--red-mid)':'var(--green)'}">${m.al}</div></div>`).join('')}</div>
+    </div>`;
+  } else if(u.role==='manager'){
+    const team=u.blockLabel==='Block A'?TEAM_A:TEAM_B;
+    ex.innerHTML=`<div class="card"><div class="card-title"><i class="ti ti-users"></i> ${u.blockLabel} — jamoangiz</div>${team.map(m=>`<div class="member-row"><div class="m-avatar ${m.av}" style="width:28px;height:28px;font-size:10px;">${m.n.substring(0,2).toUpperCase()}</div><div class="m-name" style="font-size:12px;">${m.n}</div><div class="m-role">${m.r}</div><div class="m-alerts" style="color:${m.al>0?'var(--red-mid)':'var(--green)'}">${m.al}</div></div>`).join('')}</div>`;
+  } else ex.innerHTML='';
+}
+
+// ===== DRIVERS =====
+function renderDriverPage(){
+  const tabs=document.getElementById('driver-cotabs');
+  tabs.innerHTML=COMPANIES.map(c=>`<button class="cotab${c===drvCo?' active':''}" onclick="setDrvCo('${c}')">${c}</button>`).join('');
+  renderDrivers();
+}
+function setDrvCo(co){drvCo=co;drvPage=1;renderDriverPage();}
+function toggleDriverFilter(t){if(t==='alert'){drvFilterAlert=!drvFilterAlert;document.getElementById('fbtn-alert').classList.toggle('active-red',drvFilterAlert);}else{drvFilterDisc=!drvFilterDisc;document.getElementById('fbtn-disc').classList.toggle('active-amber',drvFilterDisc);}drvPage=1;renderDrivers();}
+function drvHasAlert(d){return d.eld==='Disconnected'||d.hos<1||!d.pf||d.odo;}
+function renderDrivers(){
+  const q=document.getElementById('drv-search').value.toLowerCase();
+  const blk=document.getElementById('drv-block').value;
+  const st=document.getElementById('drv-status').value;
+  const u=currentUser;
+  let list=DRIVERS_DATA.filter(d=>{
+    if(u.role==='support'&&d.block!==(u.blockLabel==='Block A'?'A':'B'))return false;
+    if(u.role==='manager'&&d.block!==(u.blockLabel==='Block A'?'A':'B'))return false;
+    if(q&&!d.name.toLowerCase().includes(q)&&!d.truck.toLowerCase().includes(q))return false;
+    if(blk!=='all'&&d.block!==blk)return false;
+    if(st!=='all'&&d.status!==st)return false;
+    if(drvCo!=='Barchasi'&&d.company!==drvCo)return false;
+    if(drvFilterAlert&&!drvHasAlert(d))return false;
+    if(drvFilterDisc&&d.eld!=='Disconnected')return false;
+    return true;
+  });
+  const total=list.length,alerts=list.filter(drvHasAlert).length,disc=list.filter(d=>d.eld==='Disconnected').length,noPf=list.filter(d=>!d.pf).length;
+  document.getElementById('driver-stats').innerHTML=[{l:'Ko\'rsatilmoqda',v:total,c:''},{l:'Alertlar',v:alerts,c:'mv-red'},{l:'Disconnected',v:disc,c:'mv-amber'},{l:'PF yo\'q',v:noPf,c:'mv-amber'},{l:'Compliant',v:total-alerts,c:'mv-green'}].map(s=>`<div class="metric"><div class="metric-label">${s.l}</div><div class="metric-val ${s.c}">${s.v}</div></div>`).join('');
+  const PER=8,pages=Math.max(1,Math.ceil(total/PER));
+  if(drvPage>pages)drvPage=1;
+  const slice=list.slice((drvPage-1)*PER,drvPage*PER);
+  const tbody=document.getElementById('drv-tbody');
+  if(!slice.length){tbody.innerHTML=`<tr><td colspan="8" style="text-align:center;padding:1.5rem;font-size:13px;color:var(--text2)"><i class="ti ti-mood-empty"></i> Driver topilmadi</td></tr>`;return;}
+  const smap={Driving:'sb-driving','Off Duty':'sb-off',Sleeper:'sb-sleeper','On Duty':'sb-on'};
+  tbody.innerHTML=slice.map(d=>{
+    const rc=d.eld==='Disconnected'&&d.eldMin>=30?'row-crit':drvHasAlert(d)?'row-warn':'';
+    const eldCell=d.eld==='Disconnected'?`<span class="${d.eldMin>=30?'val-red':'val-amber'}"><i class="ti ti-wifi-off"></i> ${d.eldMin}min</span>`:`<span class="val-green"><i class="ti ti-wifi"></i> OK</span>`;
+    const hosCell=d.hos<1?`<span class="val-red"><i class="ti ti-alert-triangle"></i> ${d.hos.toFixed(1)}h</span>`:d.hos<2?`<span class="val-amber">${d.hos.toFixed(1)}h</span>`:`${d.hos.toFixed(1)}h`;
+    const pfCell=d.pf?`<span class="val-green"><i class="ti ti-check"></i></span>`:`<span class="val-amber"><i class="ti ti-x"></i> Yo'q</span>`;
+    const odoCell=d.odo?`<span class="val-red"><i class="ti ti-alert-triangle"></i> +${d.odoMi}mi</span>`:`<span class="val-green"><i class="ti ti-check"></i></span>`;
+    return `<tr class="${rc}"><td><div style="font-weight:500">${d.name}</div><div style="font-size:11px;color:var(--text2)">${d.truck}</div></td><td><div>${d.company}</div><div style="font-size:11px;color:var(--text2)">Block ${d.block}</div></td><td><span class="${smap[d.status]||'sb-off'}">${d.status}</span></td><td>${eldCell}</td><td>${hosCell}</td><td>${pfCell}</td><td>${odoCell}</td><td>${drvHasAlert(d)?`<button class="call-btn" onclick="openAlertFromDriver('${d.name}')"><i class="ti ti-phone"></i> Call</button>`:`<button class="call-btn" style="border-color:var(--border);color:var(--text2)"><i class="ti ti-eye"></i></button>`}</td></tr>`;
+  }).join('');
+  document.getElementById('drv-pginfo').textContent=`${(drvPage-1)*PER+1}–${Math.min(drvPage*PER,total)} / ${total} driver`;
+  let btns='';for(let i=1;i<=pages;i++)btns+=`<button class="pg-btn${i===drvPage?' active':''}" onclick="drvPage=${i};renderDrivers()">${i}</button>`;
+  document.getElementById('drv-pgbtns').innerHTML=btns;
+}
+function openAlertFromDriver(name){const a=ALERTS_DATA.find(x=>x.name===name);if(a)openAlertDetail(a.id);else showPage('alerts');}
+
+// ===== ALERTS =====
+function renderAlertsList(){
+  document.getElementById('alert-list-view').style.display='block';
+  document.getElementById('alert-detail-view').style.display='none';
+  const u=currentUser;
+  let alerts=u.role==='admin'?ALERTS_DATA:u.blockLabel.includes('A')?ALERTS_DATA.filter(a=>a.block==='A'):ALERTS_DATA.filter(a=>a.block==='B');
+  document.getElementById('alerts-list-wrap').innerHTML=alerts.map(a=>`<div class="alert-row ${a.sev}" onclick="openAlertDetail(${a.id})"><div class="dot dot-${a.sev==='crit'?'r':'a'}"></div><div class="ar-name">${a.name} <span style="font-size:11px;font-weight:400;opacity:.6">${a.truck}</span></div><div class="ar-desc">${a.title} · ${a.company}</div><span class="bdg bdg-${a.sev==='crit'?'red':'amber'}">${a.badge}</span><div class="ar-time">${a.time}</div><i class="ti ti-chevron-right" style="color:var(--text3)"></i></div>`).join('');
+}
+function showAlertList(){
+  document.getElementById('alert-list-view').style.display='block';
+  document.getElementById('alert-detail-view').style.display='none';
+}
+function openAlertDetail(id){
+  if(currentPage!=='alerts'){showPage('alerts');}
+  currentAlert=ALERTS_DATA.find(a=>a.id===id);
+  const a=currentAlert;
+  document.getElementById('alert-list-view').style.display='none';
+  document.getElementById('alert-detail-view').style.display='block';
+  document.getElementById('det-initials').textContent=a.init;
+  document.getElementById('det-name').textContent=a.name;
+  document.getElementById('det-sub').textContent=a.truck+' · '+a.company;
+  document.getElementById('det-inforows').innerHTML=[{i:'ti-map-pin',l:'Marshrut',v:a.route},{i:'ti-building',l:'Kompaniya',v:a.company+' (Block '+a.block+')'},{i:'ti-user-check',l:'Assigned',v:a.assigned},{i:'ti-activity',l:'Status',v:a.status}].map(r=>`<div class="info-row"><div class="info-label"><i class="ti ${r.i}"></i>${r.l}</div><div class="info-val">${r.v}</div></div>`).join('');
+  const pct=Math.min(100,Math.round((a.hosUsed/11)*100));
+  const hc=a.hos<1?'var(--red-mid)':a.hos<2?'var(--amber-mid)':'var(--green)';
+  document.getElementById('det-hosval').textContent=a.hosUsed.toFixed(1)+'h / 11h';
+  document.getElementById('det-hosfill').style.cssText=`width:${pct}%;background:${hc}`;
+  document.getElementById('det-hosdetail').innerHTML=[{l:'Qolgan vaqt',v:a.hos.toFixed(1)+'h',c:a.hos<1?'val-red':a.hos<2?'val-amber':'val-green'},{l:'30 daq tanaffus',v:a.hosUsed>=8?'Olindi':'Kerak emas',c:'val-green'}].map(r=>`<div class="info-row"><div class="info-label">${r.l}</div><div class="info-val ${r.c}">${r.v}</div></div>`).join('');
+  document.getElementById('det-banner').innerHTML=`<div style="background:${a.sev==='crit'?'var(--red-bg)':'var(--amber-bg)'};border:0.5px solid ${a.sev==='crit'?'#F09595':'#FAC775'};border-radius:var(--radius);padding:12px 14px;margin-bottom:12px;"><div style="font-size:14px;font-weight:600;color:${a.sev==='crit'?'var(--red)':'var(--amber)'};margin-bottom:4px;"><i class="ti ti-alert-triangle"></i> ${a.title}</div><div style="font-size:12px;color:${a.sev==='crit'?'#993C1D':'var(--amber)'};">${a.desc}</div></div>`;
+  const actions=[];
+  actions.push({cls:'primary',icon:'ti-phone',l:'Haydovchiga qo\'ng\'iroq',h:a.name+' · '+a.truck});
+  if(a.type==='disconnect'){actions.push({cls:'',icon:'ti-wifi',l:'ELD qayta ulanish ko\'rsatmasi',h:'Qadam-baqadam yo\'riqnoma'});actions.push({cls:'',icon:'ti-file-text',l:'Qog\'oz log rejimiga o\'tish',h:'ELD 2 soatdan ko\'p uzilsa majburiy'});}
+  if(a.type==='hos'){actions.push({cls:'',icon:'ti-map-pin',l:'Eng yaqin to\'xtash joyi',h:'Rest area yoki truck stop'});actions.push({cls:'danger',icon:'ti-alert-octagon',l:'Shoshilinch to\'xtatish',h:'Violation oldini olish'});}
+  if(a.type==='odometer')actions.push({cls:'',icon:'ti-clipboard-check',l:'Odometer tekshiruv so\'rovi',h:'Haydovchidan tushuntirish'});
+  if(a.type==='pretip')actions.push({cls:'',icon:'ti-clipboard-list',l:'Pre-trip eslatma yuborish',h:'ELD orqali topshirsin'});
+  document.getElementById('det-actions').innerHTML=actions.map(ac=>`<button class="action-btn ${ac.cls}"><i class="ti ${ac.icon}" style="font-size:18px;"></i><div style="flex:1"><div class="ab-label">${ac.l}</div><div class="ab-hint">${ac.h}</div></div><i class="ti ti-chevron-right"></i></button>`).join('');
+  scriptLang='uz';
+  document.querySelectorAll('.ltab').forEach((t,i)=>t.classList.toggle('active',i===0));
+  renderScript();
+  document.getElementById('det-resolve').style.display='block';
+  document.getElementById('det-resolved').style.display='none';
+  document.getElementById('det-timeline').innerHTML=a.tl.map((t,i)=>`<div class="tl-item"><div class="tl-dot-wrap"><div class="tl-dot" style="background:${t.dot==='r'?'var(--red-mid)':t.dot==='a'?'var(--amber-mid)':'var(--green)'}"></div>${i<a.tl.length-1?'<div class="tl-line"></div>':''}</div><div class="tl-content"><div class="tl-time">${t.t}</div><div class="tl-text">${t.txt}</div>${t.note?`<div class="tl-note">${t.note}</div>`:''}</div></div>`).join('');
+}
+function setLang(lang){
+  scriptLang=lang;
+  document.querySelectorAll('.ltab').forEach((t,i)=>t.classList.toggle('active',['uz','ru','en'][i]===lang));
+  renderScript();
+}
+function renderScript(){
+  if(!currentAlert)return;
+  const a=currentAlert;
+  const s=(SCRIPTS[a.type]||SCRIPTS.disconnect)[scriptLang];
+  document.getElementById('det-script').textContent=s.replace('{name}',a.name).replace('{min}',a.eldMin).replace('{hos}',a.hos.toFixed(1)).replace('{odo}',a.odoMi||0);
+}
+function resolveAlert(){
+  document.getElementById('det-resolve').style.display='none';
+  document.getElementById('det-resolved').style.display='block';
+}
+
+// ===== TEAM =====
+function renderTeam(){
+  const u=currentUser;
+  if(u.role==='admin'){
+    document.getElementById('team-content').innerHTML=`<div class="team-grid">
+      <div class="card"><div class="card-title"><i class="ti ti-users"></i> Block A — ${TEAM_A.length} kishi</div>${TEAM_A.map(m=>memberRow(m)).join('')}</div>
+      <div class="card"><div class="card-title"><i class="ti ti-users"></i> Block B — ${TEAM_B.length} kishi</div>${TEAM_B.map(m=>memberRow(m)).join('')}</div>
+    </div>`;
+  } else {
+    const team=u.blockLabel==='Block A'?TEAM_A:TEAM_B;
+    document.getElementById('team-content').innerHTML=`<div class="card"><div class="card-title"><i class="ti ti-users"></i> ${u.blockLabel} — jamoangiz</div>${team.map(m=>memberRow(m)).join('')}</div>`;
+  }
+}
+function memberRow(m){return `<div class="member-row"><div class="m-avatar ${m.av}">${m.n.substring(0,2).toUpperCase()}</div><div class="m-name">${m.n}</div><div class="m-role">${m.r}</div><div class="m-alerts" style="color:${m.al>0?'var(--red-mid)':'var(--green)'}">${m.al} alert</div></div>`;}
+
+// ===== API PAGE =====
+function renderApiPage(){
+  renderApiBar();
+  renderEpGrid();
+  renderTrigGrid();
+  if(!feedTimer) startFeed();
+}
+function showApiTab(name){
+  document.querySelectorAll('.atab').forEach((t,i)=>t.classList.toggle('active',['live','endpoints','triggers','config'][i]===name));
+  document.querySelectorAll('.apanel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('apanel-'+name).classList.add('active');
+}
+function renderApiBar(){
+  const bar=document.getElementById('api-bar');
+  if(!bar)return;
+  if(apiMock){bar.innerHTML=`<div class="api-bar api-mock"><div class="dot dot-a pulse"></div><span class="api-text">Mock data rejimi — Factor ELD API kutilmoqda</span><span style="font-size:12px;color:var(--amber);margin-left:auto;">Namuna ko'rsatilmoqda</span><button style="font-size:12px;padding:5px 12px;border-radius:var(--radius);border:0.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;margin-left:10px;" onclick="toggleApiMode()">Live rejimga o'tish</button></div>`;}
+  else{bar.innerHTML=`<div class="api-bar api-live"><div class="dot dot-g pulse"></div><span class="api-text">Factor ELD — Ulangan (demo)</span><span style="font-size:12px;color:var(--green);margin-left:auto;">Real-time · 30s sync</span><button style="font-size:12px;padding:5px 12px;border-radius:var(--radius);border:0.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;margin-left:10px;" onclick="toggleApiMode()">Mock ga qaytish</button></div>`;}
+}
+function toggleApiMode(){apiMock=!apiMock;renderApiBar();document.getElementById('cfg-mode').textContent=apiMock?'Mock data':'Live — Factor ELD';document.getElementById('cfg-mode').style.color=apiMock?'var(--amber)':'var(--green)';addFeed({dot:'fd-'+(apiMock?'a':'g'),txt:apiMock?'Mock rejimga o\'tildi':'Live rejimga o\'tildi',meta:'',badge:apiMock?'mock':'api'});}
+function renderEpGrid(){
+  const eps=[{m:'GET',t:'Driver holatlari',p:'/api/v1/drivers/status',d:'Barcha driverlar ELD statusi, HOS, joylashuv. Har 30s.',rdy:true},{m:'GET',t:'HOS ma\'lumotlari',p:'/api/v1/hos/remaining',d:'Qolgan haydash vaqti, 14h oyna, tanaffus holati.',rdy:true},{m:'GET',t:'ELD disconnect log',p:'/api/v1/eld/disconnects',d:'Uzilish vaqti, davomiyligi, haydovchi ID.',rdy:true},{m:'GET',t:'Odometer',p:'/api/v1/vehicles/odometer',d:'Odometer qiymati va farq. Jump threshold: 5 miles.',rdy:true},{m:'GET',t:'Pre/Post trip (DVIR)',p:'/api/v1/inspections/dvir',d:'DVIR holati — topshirilgan/topshirilmagan.',rdy:true},{m:'POST',t:'Alert webhook',p:'/webhook/factor-eld/events',d:'Factor ELD dan real-time push. API kelganda URL shu.',rdy:false}];
+  document.getElementById('ep-grid').innerHTML=`<div class="ep-grid">${eps.map(e=>`<div class="ep-card"><span class="ep-method ${e.m==='GET'?'ep-get':'ep-post'}">${e.m}</span><div style="font-size:13px;font-weight:500;margin-bottom:5px;">${e.t}</div><code class="ep-path">${e.p}</code><div style="font-size:12px;color:var(--text2);line-height:1.5;">${e.d}</div><div style="font-size:11px;margin-top:8px;color:${e.rdy?'var(--green)':'var(--amber)'}"><i class="ti ti-${e.rdy?'circle-check':'clock'}"></i> ${e.rdy?'Mock tayyor · Real API ulanishga tayyor':'API key kutilmoqda'}</div></div>`).join('')}</div>`;
+}
+function renderTrigGrid(){
+  document.getElementById('trig-grid').innerHTML=TRIGGERS.map((t,i)=>`<div class="trig-card"><div style="font-size:13px;font-weight:500;margin-bottom:4px;display:flex;align-items:center;gap:6px;"><i class="ti ${t.icon}"></i>${t.title}</div><div style="font-size:12px;color:var(--text2);margin-bottom:10px;line-height:1.5;">${t.desc}</div>${t.field?`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><span style="font-size:12px;color:var(--text2);">${t.field}:</span><input type="number" value="${t.val}" min="1" style="width:65px;padding:4px 8px;font-size:12px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);outline:none;" /></div>`:'<div style="height:8px;"></div>'}<div style="display:flex;align-items:center;gap:8px;"><div class="toggle-sw${t.on?' on':''}" onclick="toggleTrig(${i})"><div class="toggle-thumb"></div></div><span style="font-size:12px;color:${t.on?'var(--green)':'var(--text3)'};" id="tl${i}">${t.on?'Yoqilgan':'O\'chirilgan'}</span></div></div>`).join('');
+}
+function toggleTrig(i){TRIGGERS[i].on=!TRIGGERS[i].on;renderTrigGrid();}
+function saveConfig(){const s=document.getElementById('cfg-saved');s.style.display='inline';setTimeout(()=>s.style.display='none',2000);}
+
+// ===== FACTOR ELD API =====
+const API_BASE = 'https://api.drivehos.app';
+const PROVIDER_KEY = '96629a2842e6d7ada54a17f55fceefaf522327e90a86691c2f659602c621a292';
+
+// Company keys — har bir kompaniya uchun
+const COMPANY_KEYS = {
+  'IMS INTERSTATE LOGISTICS INC':     '48e1fda3d6c04ba5c05b88f368f7c23b613cc9eed054b67dc9104a4717b892b5',
+  'ROUTE PRO INC':                    '78c63035b5398b2af85181840350efdc7492d079d97c10f8b0e865022efd87c0',
+  'PREMIUM TRUCKING SERVICES LLC':    '8b65f1ab0a104b54843dc1617040f3251d0f4b5ea68c6d5ea0a82c3677d324b8',
+  'AKBARS LLC':                       '9a25d871677a473903124279ef45f4feee30c2a01a0366d57bbd2c404a6c09d0',
+  'AZ BROTHERS TRUCKING LLC':         '0cf224d386a08cd0c9d8945fe408f8631d7ffa1674087eacdd91e65564a442d6',
+  'MUKHSIN CARGO LLC':                'cb7531632fcc84a3d8ee198eff0c15419d3ff46a1604202f2deec9f8b24093d6',
+  'ESL TRUCKING INCORPORATED':        'ac27a58749f647f0b495288b8b20e8ab',
+  'MIRAN TRANSPORTATION LLC':         '458ff92cf4a84d49ab59cb35d9fd1855',
+  'RAASO TRUCKING LLC':               'd49600a483f34105aa6ddd13cffa1d07',
+  'DOMWASA TRUCKING LLC':             '2558b8c108bf40748f6f44c3e6f0550a',
+  'DRAMMEH EXPRESS LLC':              '5cba8eef44cabd012cea8d7e1d3aca15151be52c8fb067e6a7d82faf377c6e8a',
+  'SHEKOW TRUCKING LLC':              'd887c1b21aaa411e9244be9bd5863d65',
+  'EUBANKS LOGISTICS LLC':            '0c5f704bf6dac3f1f0993d95feeae1923cb5bd997f438569fad5b8dcd4532d3a',
+  'KUSHON UZ LLC':                    '3f8f8172222b401ab6b2e4717b2e5d05',
+  'UPSTATE TRANSPORT LLC':            '454e64d166a733a5d87b438429aa9def9a72e0bd655678a439625bae46cc0902',
+  'SUPERB LLC':                       '8a238641d1e3469c8b297f37d3c6ea11',
+  'FINEST JACMELIAN TRUCKING LLC':    'd55db68d5fd140b1b0b92c7c3003c9d8',
+  'AYNUR EXPRESS LLC':                '7cb00c886c17414d8308d946d388a534',
+  'MNM FREIGHT INC':                  '9fba149ed94948d69fea788e764e79cb',
+  'DREAM BIG TRANSPORTATION INC':     '91bffdd0baabd9f602929a3d2cfbe502d72315200f903c4dd5bfdb2624544eb6',
+  'BRAND CARGO INC':                  '34aada41d3574582ad37688e9b33d0ca',
+  'KG EXPRESS 80 INC':                '88fbd4e4ff4f5f80ae2bf10ff4e37df88093114cb52342b17a98efdbf88adb43',
+  'NSO EXPRESS LLC':                  'db63b7c1b2515b01bd7f0398ba283614528073df0ca35d5d85e833fefb036678',
+  'FIVE STAR LOGISTICS GROUP LLC':    'f3177dd414924091b359424c15c0d0e0',
+  'LIONS HEAD LOGISTICS LLC':         '173ca1a2e88b44019fc03316d5706dff',
+  'FIVE STAR EXPRESS LLC':            '5feb59e17e7e47b887e4d45fde3de328',
+  'UAG EXPRESS INC':                  '7583dcbe6a454f94aa3057bb237657a3',
+  'USCAN LOGISTICS INC':              '69c678c5410e9707003e6a9559da9ec0c9ef2de2be8b6de18340d5ac605278ed',
+  'KJ TRANSPORT INC':                 '1ab48dbc06e04602ae018142dee97600',
+};
+
+// Prev snapshot — disconnect va odometer aniqlash uchun
+let prevDriverStatus = {};
+let prevVehicleOdo = {};
+let apiDrivers = [];
+let apiAlerts = [];
+let lastSyncTime = null;
+
+async function apiFetch(path, companyKey) {
+  const cleanPath = path.split('?')[0];
+  const hasParams = path.includes('?');
+  const params = hasParams ? path.split('?')[1] : 
+    (cleanPath === '/v2/latest-driver-status' || cleanPath === '/v2/latest-vehicle-status' ? '' : 'limit=1000&page=1');
+  const url = `/.netlify/functions/api?path=${encodeURIComponent(cleanPath)}&params=${encodeURIComponent(params)}`;
+  const res = await fetch(url, {
+    headers: { 'x-company-key': companyKey }
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
+async function syncAllCompanies() {
+  const allDrivers = [];
+  const allStatuses = [];
+  const allVehicles = [];
+
+  for (const [companyName, companyKey] of Object.entries(COMPANY_KEYS)) {
+    try {
+      // Drivers list
+      const driversRes = await apiFetch('/v2/drivers?limit=1000&page=1', companyKey);
+      const drivers = driversRes.data || [];
+      drivers.forEach(d => { d._company = companyName; d._companyKey = companyKey; });
+      allDrivers.push(...drivers);
+
+      // Latest driver status (ELD, HOS, duty status)
+      const statusRes = await apiFetch('/v2/latest-driver-status', companyKey);
+      const statuses = statusRes.data || [];
+      statuses.forEach(s => { s._company = companyName; });
+      allStatuses.push(...statuses);
+
+      // Vehicles (odometer)
+      const vehiclesRes = await apiFetch('/v2/latest-vehicle-status', companyKey);
+      const vehicles = vehiclesRes.data || [];
+      vehicles.forEach(v => { v._company = companyName; });
+      allVehicles.push(...vehicles);
+
+      addFeed({dot:'fd-b', txt:`${companyName} — sync OK`, meta:`${drivers.length} driver`, badge:'api'});
+    } catch(e) {
+      addFeed({dot:'fd-a', txt:`${companyName} — sync xatosi`, meta:e.message, badge:'api'});
+    }
+  }
+
+  processApiData(allDrivers, allStatuses, allVehicles);
+}
+
+function processApiData(drivers, statuses, vehicles) {
+  const now = new Date();
+  lastSyncTime = now.toTimeString().slice(0,8);
+  const newAlerts = [];
+
+  // Status map by driver_id
+  const statusMap = {};
+  statuses.forEach(s => { if(s.driver_id) statusMap[s.driver_id] = s; });
+
+  // Vehicle map by vehicle_id
+  const vehMap = {};
+  vehicles.forEach(v => { if(v.vehicle_id) vehMap[v.vehicle_id] = v; });
+
+  // Build unified driver list
+  apiDrivers = drivers.map(d => {
+    const st = statusMap[d.driver_id] || {};
+    const dutyStatus = st.duty_status || 'Off Duty';
+    const hosRemaining = st.driving_minutes_remaining != null ? st.driving_minutes_remaining / 60 : 11;
+    const hosUsed = 11 - hosRemaining;
+    const eldConnected = st.eld_connected !== false;
+    const eldDisconnectMin = st.eld_disconnect_minutes || 0;
+    const hasDvir = st.has_dvir !== false;
+    const vehicleId = st.vehicle_id || null;
+    const odo = vehicleId && vehMap[vehicleId] ? vehMap[vehicleId].odometer : null;
+
+    // Odometer jump check
+    let odoJump = false;
+    let odoJumpMiles = 0;
+    if (vehicleId && odo != null) {
+      const prevOdo = prevVehicleOdo[vehicleId];
+      if (prevOdo != null) {
+        const diff = Math.abs(odo - prevOdo);
+        if (diff > 5 && diff < 500) { odoJump = true; odoJumpMiles = Math.round(diff); }
+      }
+      prevVehicleOdo[vehicleId] = odo;
+    }
+
+    // ELD disconnect check — alert
+    if (!eldConnected && eldDisconnectMin >= 10) {
+      const severity = eldDisconnectMin >= 30 ? 'crit' : 'warn';
+      newAlerts.push({
+        id: Date.now() + Math.random(),
+        name: `${d.first_name} ${d.last_name}`,
+        init: (d.first_name[0]||'') + (d.last_name[0]||''),
+        truck: vehicleId || '—',
+        company: d._company,
+        block: 'A',
+        assigned: '—',
+        status: dutyStatus,
+        route: '—',
+        type: 'disconnect',
+        sev: severity,
+        badge: severity === 'crit' ? 'Critical' : 'Warning',
+        time: lastSyncTime,
+        eldMin: eldDisconnectMin,
+        hos: hosRemaining,
+        hosUsed: hosUsed,
+        pf: hasDvir,
+        odo: false, odoMi: 0,
+        title: `ELD Disconnect — ${eldDisconnectMin} daqiqa`,
+        desc: `Haydovchi ELD ${eldDisconnectMin} daqiqadan beri uzilgan.`,
+        tl: [{t:lastSyncTime, txt:'ELD disconnect aniqlandi', note:'Avtomatik', dot:'r'}]
+      });
+      addFeed({dot: severity==='crit'?'fd-r':'fd-a', txt:`${d.first_name} ${d.last_name} — ELD disconnect ${eldDisconnectMin}min`, meta:d._company, badge:'api'});
+    }
+
+    // HOS critical check
+    if (hosRemaining < 1 && dutyStatus === 'D') {
+      newAlerts.push({
+        id: Date.now() + Math.random(),
+        name: `${d.first_name} ${d.last_name}`,
+        init: (d.first_name[0]||'') + (d.last_name[0]||''),
+        truck: vehicleId || '—',
+        company: d._company,
+        block: 'A',
+        assigned: '—',
+        status: 'Driving',
+        route: '—',
+        type: 'hos',
+        sev: 'crit',
+        badge: 'Critical',
+        time: lastSyncTime,
+        eldMin: 0,
+        hos: hosRemaining,
+        hosUsed: hosUsed,
+        pf: hasDvir,
+        odo: false, odoMi: 0,
+        title: `HOS Critical — ${hosRemaining.toFixed(1)}h qoldi`,
+        desc: `Haydovchi ${hosRemaining.toFixed(1)} soat haydash vaqti qoldi. Zudlik bilan to'xtatish.`,
+        tl: [{t:lastSyncTime, txt:'HOS critical alert', note:'', dot:'r'}]
+      });
+      addFeed({dot:'fd-r', txt:`${d.first_name} ${d.last_name} — HOS critical ${hosRemaining.toFixed(1)}h`, meta:d._company, badge:'api'});
+    }
+
+    // Pre-trip missing
+    if (!hasDvir && (dutyStatus === 'D' || dutyStatus === 'ON')) {
+      newAlerts.push({
+        id: Date.now() + Math.random(),
+        name: `${d.first_name} ${d.last_name}`,
+        init: (d.first_name[0]||'') + (d.last_name[0]||''),
+        truck: vehicleId || '—',
+        company: d._company,
+        block: 'A', assigned: '—', status: dutyStatus,
+        route: '—', type: 'pretip', sev: 'warn', badge: 'Warning',
+        time: lastSyncTime, eldMin: 0, hos: hosRemaining, hosUsed,
+        pf: false, odo: false, odoMi: 0,
+        title: 'Pre-trip topshirilmadi',
+        desc: 'Haydovchi shift boshlagan, lekin pre-trip inspection yo\'q.',
+        tl: [{t:lastSyncTime, txt:'Pre-trip missing aniqlandi', note:'', dot:'a'}]
+      });
+      addFeed({dot:'fd-a', txt:`${d.first_name} ${d.last_name} — Pre-trip topshirilmadi`, meta:d._company, badge:'api'});
+    }
+
+    // Odometer jump
+    if (odoJump) {
+      newAlerts.push({
+        id: Date.now() + Math.random(),
+        name: `${d.first_name} ${d.last_name}`,
+        init: (d.first_name[0]||'') + (d.last_name[0]||''),
+        truck: vehicleId || '—',
+        company: d._company,
+        block: 'A', assigned: '—', status: dutyStatus,
+        route: '—', type: 'odometer', sev: 'crit', badge: 'Critical',
+        time: lastSyncTime, eldMin: 0, hos: hosRemaining, hosUsed,
+        pf: hasDvir, odo: true, odoMi: odoJumpMiles,
+        title: `Odometer Jump — ${odoJumpMiles} miles`,
+        desc: `${odoJumpMiles} millik odometer farqi aniqlandi.`,
+        tl: [{t:lastSyncTime, txt:`Odometer jump +${odoJumpMiles}mi`, note:'', dot:'r'}]
+      });
+      addFeed({dot:'fd-r', txt:`${d.first_name} ${d.last_name} — Odometer jump +${odoJumpMiles}mi`, meta:d._company, badge:'api'});
+    }
+
+    return {
+      id: d.driver_id,
+      name: `${d.first_name} ${d.last_name}`,
+      truck: vehicleId || '—',
+      company: d._company,
+      block: 'A',
+      status: dutyStatus === 'D' ? 'Driving' : dutyStatus === 'ON' ? 'On Duty' : dutyStatus === 'SB' ? 'Sleeper' : 'Off Duty',
+      eld: eldConnected ? 'Connected' : 'Disconnected',
+      eldMin: eldDisconnectMin,
+      hos: hosRemaining,
+      hosUsed,
+      pf: hasDvir,
+      odo: odoJump,
+      odoMi: odoJumpMiles,
+    };
+  });
+
+  // Update global alerts with real data
+  if (newAlerts.length > 0) {
+    ALERTS_DATA.length = 0;
+    newAlerts.forEach((a,i) => { a.id = i+1; ALERTS_DATA.push(a); });
+  }
+
+  // Update DRIVERS_DATA with real
+  if (apiDrivers.length > 0) {
+    DRIVERS_DATA.length = 0;
+    apiDrivers.forEach((d,i) => { d.id = i+1; DRIVERS_DATA.push(d); });
+  }
+
+  // Update metrics in UI
+  updateApiStats();
+
+  // Refresh current page
+  if (currentPage === 'dashboard') renderDashboard();
+  if (currentPage === 'drivers') renderDrivers();
+  if (currentPage === 'alerts') renderAlertsList();
+}
+
+function updateApiStats() {
+  const syn = document.getElementById('api-sync');
+  if (syn) syn.textContent = lastSyncTime || '—';
+  const on = document.getElementById('api-online');
+  if (on) on.textContent = apiDrivers.length || DRIVERS_DATA.length;
+  const ac = document.getElementById('api-alerts');
+  if (ac) ac.textContent = ALERTS_DATA.filter(a=>a.sev==='crit').length;
+}
+
+// ===== FEED =====
+function addFeed(ev){
+  const now=new Date();
+  const t=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0')+':'+now.getSeconds().toString().padStart(2,'0');
+  feedEvents.unshift({...ev,time:t});
+  if(feedEvents.length>60)feedEvents.pop();
+  if(['fd-r','fd-a'].includes(ev.dot))feedAlertCount++;
+  const fb=document.getElementById('feed-body');
+  if(!fb)return;
+  const dotColors={'fd-r':'var(--red-mid)','fd-a':'var(--amber-mid)','fd-g':'var(--green)','fd-b':'var(--blue-mid)'};
+  fb.innerHTML=feedEvents.map(e=>`<div class="feed-row"><div class="dot" style="background:${dotColors[e.dot]||'var(--text3)'};margin-top:4px;"></div><div class="feed-body"><div class="feed-event">${e.txt}<span class="fb-${e.badge||'mock'}">${e.badge==='api'?'API':'mock'}</span></div>${e.meta?`<div class="feed-meta">${e.meta}</div>`:''}</div><div class="feed-time">${e.time}</div></div>`).join('');
+  const fc=document.getElementById('feed-cnt');if(fc)fc.textContent=feedEvents.length+' event';
+  const ac=document.getElementById('api-alerts');if(ac)ac.textContent=feedAlertCount;
+  const syn=document.getElementById('api-sync');if(syn&&lastSyncTime)syn.textContent=lastSyncTime;
+  const on=document.getElementById('api-online');if(on&&apiDrivers.length)on.textContent=apiDrivers.length;
+}
+
+function startFeed(){
+  addFeed({dot:'fd-b',txt:'Tizim ishga tushdi — Factor ELD API ulanmoqda...',meta:'MIRAN TRANSPORTATION LLC',badge:'api'});
+  // Birinchi sync darhol
+  syncAllCompanies().catch(e=>addFeed({dot:'fd-a',txt:'API sync xatosi',meta:e.message,badge:'api'}));
+  // Har 30 soniyada qayta sync
+  feedTimer=setInterval(()=>{
+    syncAllCompanies().catch(e=>addFeed({dot:'fd-a',txt:'Sync xatosi',meta:e.message,badge:'api'}));
+  }, 30000);
+}
+</script>
+</body>
+</html>
