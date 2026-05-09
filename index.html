@@ -793,10 +793,11 @@ let apiAlerts = [];
 let lastSyncTime = null;
 
 async function apiFetch(path, companyKey) {
-  // Netlify Function proxy — CORS muammo yo'q
-  const params = path.includes('?') ? path.split('?')[1] : (path === '/v2/latest-driver-status' || path === '/v2/latest-vehicle-status' ? '' : 'limit=1000&page=1');
   const cleanPath = path.split('?')[0];
-  const url = `/api/proxy?path=${encodeURIComponent(cleanPath)}&params=${encodeURIComponent(params)}`;
+  const hasParams = path.includes('?');
+  const params = hasParams ? path.split('?')[1] : 
+    (cleanPath === '/v2/latest-driver-status' || cleanPath === '/v2/latest-vehicle-status' ? '' : 'limit=1000&page=1');
+  const url = `/.netlify/functions/api?path=${encodeURIComponent(cleanPath)}&params=${encodeURIComponent(params)}`;
   const res = await fetch(url, {
     headers: { 'x-company-key': companyKey }
   });
