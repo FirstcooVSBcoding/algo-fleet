@@ -461,36 +461,9 @@ const USERS = {
   'sevinch.support':  {pass:'FB@Sev2025',name:'Sevinch',init:'SV',role:'support',avCls:'av-sup-b',rbCls:'rb-sup-b',bnCls:'bn-sup-b',blockLabel:'Block B',banner:'Block B Support',metrics:[{l:'Mening driverlarim',v:'29',c:''},{l:'Alertlar',v:'0',c:'mv-green'},{l:'Compliant',v:'29',c:'mv-green'}],mcols:3,nav:['dashboard','drivers','alerts']},
 };
 
-const ALERTS_DATA = [
-  {id:1,name:'James Mitchell',init:'JM',truck:'TRK-041',company:'Swift Logistics',block:'A',assigned:'Muzaffar',status:'Driving',route:'I-80 West, mile 234',type:'disconnect',sev:'crit',badge:'Critical',time:'14:23',eldMin:47,hos:3.2,hosUsed:7.8,pf:true,odo:false,odoMi:0,title:'ELD Disconnect — 47 daqiqa',desc:'Haydovchi marshrut ustida, ELD 47 daqiqadan beri uzilgan. DOT inspection xavfi yuqori.',tl:[{t:'14:23',txt:'ELD disconnect aniqlandi',note:'Avtomatik alert',dot:'r'},{t:'14:20',txt:'I-80 da harakatda',note:'Oxirgi GPS signal',dot:'a'},{t:'13:15',txt:'Shift boshlandi',note:'Pre-trip OK',dot:'g'}]},
-  {id:2,name:'Carlos Reyes',init:'CR',truck:'TRK-112',company:'Iron Road LLC',block:'B',assigned:'Jahongir',status:'Driving',route:'I-40 East, mile 89',type:'hos',sev:'crit',badge:'Critical',time:'14:18',eldMin:0,hos:0.3,hosUsed:10.7,pf:true,odo:false,odoMi:0,title:'HOS Violation — 11h limiti',desc:'10.7 soat haydab, faqat 0.3 soat qoldi. Zudlik bilan to\'xtatish kerak.',tl:[{t:'14:18',txt:'HOS critical — 0.3h qoldi',note:'Violation xavfi',dot:'r'},{t:'12:00',txt:'30 daq tanaffus',note:'8h haydashdan keyin',dot:'g'},{t:'03:30',txt:'Shift boshlandi',note:'',dot:'g'}]},
-  {id:3,name:'Dmitri Volkov',init:'DV',truck:'TRK-089',company:'FastMove Inc.',block:'A',assigned:'Davron',status:'Driving',route:'US-101 North, mile 412',type:'odometer',sev:'crit',badge:'Critical',time:'14:05',eldMin:0,hos:5.1,hosUsed:5.9,pf:true,odo:true,odoMi:38,title:'Odometer Jump — 38 miles',desc:'ELD log bilan 38 millik farq. Tekshirish kerak.',tl:[{t:'14:05',txt:'Odometer jump +38 miles',note:'ELD log bilan farq',dot:'r'},{t:'13:45',txt:'Normal harakatda',note:'',dot:'g'}]},
-  {id:4,name:'Sarah Johnson',init:'SJ',truck:'TRK-203',company:'Apex Freight',block:'A',assigned:'Mark',status:'On Duty',route:'Yard — Memphis TN',type:'pretip',sev:'warn',badge:'Warning',time:'13:50',eldMin:0,hos:8.0,hosUsed:3.0,pf:false,odo:false,odoMi:0,title:'Pre-trip topshirilmadi',desc:'Shift boshlanib 2+ soat o\'tdi, pre-trip ELDda yo\'q.',tl:[{t:'13:50',txt:'Pre-trip missing alert',note:'2 soat kechikish',dot:'a'},{t:'11:30',txt:'Shift boshlandi',note:'',dot:'g'}]},
-  {id:5,name:'Mike Petrov',init:'MP',truck:'TRK-067',company:'Summit Carriers',block:'A',assigned:'Muhammadxo\'ja',status:'Driving',route:'I-70 West, mile 156',type:'disconnect',sev:'warn',badge:'Warning',time:'13:44',eldMin:18,hos:4.5,hosUsed:6.5,pf:true,odo:false,odoMi:0,title:'ELD Disconnect — 18 daqiqa',desc:'ELD 18 daqiqadan beri uzilgan. Haydovchi harakatda.',tl:[{t:'13:44',txt:'ELD disconnect',note:'18 daqiqa',dot:'a'},{t:'13:26',txt:'Oxirgi ELD signal',note:'',dot:'g'}]},
-];
+const ALERTS_DATA = []; // Real data — Factor ELD API dan keladi
 
-const DRIVERS_DATA = [
-  {id:1,name:'James Mitchell',truck:'TRK-041',company:'Swift Logistics',block:'A',status:'Driving',eld:'Disconnected',eldMin:47,hos:3.2,hosUsed:7.8,pf:true,odo:true,odoMi:38},
-  {id:2,name:'Carlos Reyes',truck:'TRK-112',company:'Iron Road LLC',block:'B',status:'Driving',eld:'Connected',eldMin:0,hos:0.3,hosUsed:10.7,pf:true,odo:false,odoMi:0},
-  {id:3,name:'Dmitri Volkov',truck:'TRK-089',company:'FastMove Inc.',block:'A',status:'Driving',eld:'Connected',eldMin:0,hos:5.1,hosUsed:5.9,pf:true,odo:true,odoMi:38},
-  {id:4,name:'Sarah Johnson',truck:'TRK-203',company:'Apex Freight',block:'A',status:'On Duty',eld:'Connected',eldMin:0,hos:8.0,hosUsed:3.0,pf:false,odo:false,odoMi:0},
-  {id:5,name:'Mike Petrov',truck:'TRK-067',company:'Summit Carriers',block:'A',status:'Driving',eld:'Disconnected',eldMin:18,hos:4.5,hosUsed:6.5,pf:true,odo:false,odoMi:0},
-  {id:6,name:'Tony Barnes',truck:'TRK-155',company:'Eagle Transport',block:'B',status:'On Duty',eld:'Connected',eldMin:0,hos:7.2,hosUsed:3.8,pf:false,odo:false,odoMi:0},
-  {id:7,name:'Robert Kim',truck:'TRK-034',company:'Swift Logistics',block:'A',status:'Off Duty',eld:'Connected',eldMin:0,hos:11.0,hosUsed:0,pf:true,odo:false,odoMi:0},
-  {id:8,name:'David Chen',truck:'TRK-278',company:'Blue Ridge Trans.',block:'A',status:'Sleeper',eld:'Connected',eldMin:0,hos:11.0,hosUsed:0,pf:true,odo:false,odoMi:0},
-  {id:9,name:'Maria Lopez',truck:'TRK-091',company:'Horizon Freight',block:'B',status:'Driving',eld:'Connected',eldMin:0,hos:6.3,hosUsed:4.7,pf:true,odo:false,odoMi:0},
-  {id:10,name:'Kevin Nash',truck:'TRK-145',company:'Peak Logistics',block:'B',status:'Driving',eld:'Connected',eldMin:0,hos:9.1,hosUsed:1.9,pf:true,odo:false,odoMi:0},
-  {id:11,name:'Alex Turner',truck:'TRK-056',company:'FastMove Inc.',block:'A',status:'Off Duty',eld:'Connected',eldMin:0,hos:11.0,hosUsed:0,pf:true,odo:false,odoMi:0},
-  {id:12,name:'Nina Patel',truck:'TRK-189',company:'Summit Carriers',block:'A',status:'Driving',eld:'Connected',eldMin:0,hos:7.8,hosUsed:3.2,pf:true,odo:false,odoMi:0},
-  {id:13,name:'George Moss',truck:'TRK-312',company:'Iron Road LLC',block:'B',status:'Sleeper',eld:'Connected',eldMin:0,hos:11.0,hosUsed:0,pf:true,odo:false,odoMi:0},
-  {id:14,name:'Lisa Grant',truck:'TRK-077',company:'Eagle Transport',block:'B',status:'Driving',eld:'Connected',eldMin:0,hos:5.5,hosUsed:5.5,pf:true,odo:false,odoMi:0},
-  {id:15,name:'Omar Hassan',truck:'TRK-234',company:'Apex Freight',block:'A',status:'On Duty',eld:'Connected',eldMin:0,hos:10.2,hosUsed:0.8,pf:true,odo:false,odoMi:0},
-  {id:16,name:'Jake Wilson',truck:'TRK-098',company:'Blue Ridge Trans.',block:'A',status:'Driving',eld:'Connected',eldMin:0,hos:2.1,hosUsed:8.9,pf:true,odo:false,odoMi:0},
-  {id:17,name:'Anna Sorel',truck:'TRK-267',company:'Horizon Freight',block:'B',status:'Off Duty',eld:'Connected',eldMin:0,hos:11.0,hosUsed:0,pf:true,odo:false,odoMi:0},
-  {id:18,name:'Paul Russo',truck:'TRK-143',company:'Peak Logistics',block:'B',status:'Driving',eld:'Connected',eldMin:0,hos:8.4,hosUsed:2.6,pf:true,odo:false,odoMi:0},
-  {id:19,name:'Tina Brooks',truck:'TRK-319',company:'Swift Logistics',block:'A',status:'Driving',eld:'Connected',eldMin:0,hos:6.7,hosUsed:4.3,pf:true,odo:false,odoMi:0},
-  {id:20,name:'Sam Foster',truck:'TRK-052',company:'Iron Road LLC',block:'B',status:'Sleeper',eld:'Connected',eldMin:0,hos:11.0,hosUsed:0,pf:true,odo:false,odoMi:0},
-];
+const DRIVERS_DATA = []; // Real data — Factor ELD API dan keladi
 
 const SCRIPTS = {
   disconnect:{uz:`Salom, {name} aka. Algo Group dispetcheriman.\n\nELD tizimingiz {min} daqiqadan beri uzilgan ko'rinayapti.\n\nIltimos:\n1. Telefoningizda Factor ELD ilovasini oching\n2. Internet aloqasini tekshiring\n3. Ulanmasa — qog'oz log yozishni boshlang\n\nMuammo davom etsa, qayta qo'ng'iroq qiling.`,ru:`Здравствуйте, {name}. Диспетчер Algo Group.\n\nВаш ELD отключён уже {min} минут.\n\nПожалуйста:\n1. Откройте приложение Factor ELD\n2. Проверьте интернет\n3. Если не подключается — начните бумажный лог\n\nПерезвоните если проблема не решится.`,en:`Hi {name}, Algo Group dispatch.\n\nYour ELD has been disconnected for {min} minutes.\n\nPlease:\n1. Open your Factor ELD app\n2. Check internet connection\n3. If won't connect — start paper logs\n\nCall back if the issue continues.`},
