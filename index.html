@@ -555,26 +555,35 @@ function renderDashboard(){
   bn.className='role-banner '+u.bnCls;
   bn.innerHTML='<i class="ti ti-info-circle"></i> '+u.banner;
   const mg=document.getElementById('dash-metrics');
-  mg.style.gridTemplateColumns='repeat('+u.mcols+',1fr)';
   // Real API metrics
   const total=DRIVERS_DATA.length||0;
   const alerts=ALERTS_DATA.length||0;
   const disc=DRIVERS_DATA.filter(d=>d.eld==='Disconnected').length||0;
-  const compliant=total-alerts;
-  const realMetrics=u.role==='admin'?[
-    {l:'Jami driverlar',v:total||'—',c:''},
-    {l:'Active alerts',v:alerts,c:alerts>0?'mv-red':''},
-    {l:'Disconnected',v:disc,c:disc>0?'mv-amber':''},
-    {l:'Compliant',v:compliant,c:'mv-green'}
-  ]:u.role==='manager'?[
-    {l:'Driverlar',v:total||'—',c:''},
-    {l:'Active alerts',v:alerts,c:alerts>0?'mv-red':''},
-    {l:'Compliant',v:compliant,c:'mv-green'}
-  ]:[
-    {l:'Mening driverlarim',v:total||'—',c:''},
-    {l:'Alertlar',v:alerts,c:alerts>0?'mv-red':''},
-    {l:'Compliant',v:compliant,c:'mv-green'}
-  ];
+  const compliant=Math.max(0,total-alerts);
+  let realMetrics;
+  if(u.role==='admin'){
+    mg.style.gridTemplateColumns='repeat(4,1fr)';
+    realMetrics=[
+      {l:'Jami driverlar',v:total||'—',c:''},
+      {l:'Active alerts',v:alerts,c:alerts>0?'mv-red':''},
+      {l:'Disconnected',v:disc,c:disc>0?'mv-amber':''},
+      {l:'Compliant',v:compliant,c:'mv-green'}
+    ];
+  } else if(u.role==='manager'){
+    mg.style.gridTemplateColumns='repeat(3,1fr)';
+    realMetrics=[
+      {l:'Driverlar',v:total||'—',c:''},
+      {l:'Active alerts',v:alerts,c:alerts>0?'mv-red':''},
+      {l:'Compliant',v:compliant,c:'mv-green'}
+    ];
+  } else {
+    mg.style.gridTemplateColumns='repeat(3,1fr)';
+    realMetrics=[
+      {l:'Mening driverlarim',v:total||'—',c:''},
+      {l:'Alertlar',v:alerts,c:alerts>0?'mv-red':''},
+      {l:'Compliant',v:compliant,c:'mv-green'}
+    ];
+  }
   mg.innerHTML=realMetrics.map(m=>`<div class="metric"><div class="metric-label">${m.l}</div><div class="metric-val ${m.c}">${m.v}</div></div>`).join('');
   const alWrap=document.getElementById('dash-alerts');
   const alerts=u.role==='admin'?ALERTS_DATA:u.blockLabel.includes('A')?ALERTS_DATA.filter(a=>a.block==='A'):ALERTS_DATA.filter(a=>a.block==='B');
